@@ -87,9 +87,9 @@ export default function AuthenticatorWrapper({
                       </div>
                     );
                   }
-                  
-                  // If not authenticated, return null so the auth form shows
-                  return null;
+
+                  // If not authenticated, return empty div so the auth form shows
+                  return <div />;
                 }}
               </Authenticator>
             </ThemeProvider>
