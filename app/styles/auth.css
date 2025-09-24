@@ -1,0 +1,383 @@
+/* Modern Authentication Styles */
+
+/* Main Container */
+.modern-auth-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hero Section */
+.modern-hero-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  min-height: 100vh;
+  position: relative;
+}
+
+.modern-hero-content {
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.modern-hero-title {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0 0 24px 0;
+  color: white;
+}
+
+.modern-hero-description {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #a0aec0;
+  margin: 0 0 48px 0;
+  font-weight: 400;
+}
+
+/* Auth Form */
+.modern-auth-form {
+  max-width: 420px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+/* Features Section */
+.modern-features-section {
+  background: #1a202c;
+  padding: 80px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modern-features-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.modern-features-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 60px 0;
+}
+
+.modern-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  margin-top: 60px;
+}
+
+.modern-feature-card {
+  background: rgba(45, 55, 72, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 40px 32px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.modern-feature-card:hover {
+  transform: translateY(-4px);
+  background: rgba(45, 55, 72, 0.8);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modern-feature-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin: 0 auto 24px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.modern-feature-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 16px 0;
+}
+
+.modern-feature-description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #a0aec0;
+  margin: 0;
+}
+
+/* Amplify UI Overrides */
+[data-amplify-authenticator] {
+  --amplify-components-authenticator-router-border-radius: 16px;
+  --amplify-components-authenticator-router-background-color: rgba(45, 55, 72, 0.9);
+  --amplify-components-authenticator-router-border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-amplify-authenticator] [data-amplify-router] {
+  background: rgba(45, 55, 72, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Tab Navigation */
+[data-amplify-authenticator] [data-amplify-tabs] {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  margin-bottom: 32px !important;
+}
+
+[data-amplify-authenticator] [data-amplify-tabs] button {
+  color: #a0aec0 !important;
+  border-bottom: 2px solid transparent !important;
+  padding: 16px 24px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-amplify-authenticator] [data-amplify-tabs] button[data-state="active"] {
+  color: white !important;
+  border-bottom-color: #667eea !important;
+}
+
+[data-amplify-authenticator] [data-amplify-tabs] button:hover {
+  color: white !important;
+}
+
+/* Form Container */
+[data-amplify-authenticator] form {
+  padding: 40px 32px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Form Inputs */
+[data-amplify-authenticator] input,
+[data-amplify-authenticator] select {
+  background: rgba(26, 32, 44, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border-radius: 12px !important;
+  padding: 16px 20px !important;
+  font-size: 16px !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-amplify-authenticator] input:focus,
+[data-amplify-authenticator] select:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+  outline: none !important;
+  background: rgba(26, 32, 44, 1) !important;
+}
+
+[data-amplify-authenticator] input::placeholder {
+  color: #718096 !important;
+}
+
+/* Labels */
+[data-amplify-authenticator] label {
+  color: #e2e8f0 !important;
+  font-weight: 500 !important;
+  margin-bottom: 8px !important;
+  font-size: 14px !important;
+}
+
+/* Buttons */
+[data-amplify-authenticator] button[data-variation="primary"] {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 16px 24px !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  margin-top: 8px !important;
+}
+
+[data-amplify-authenticator] button[data-variation="primary"]:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
+}
+
+[data-amplify-authenticator] button[data-variation="link"] {
+  color: #667eea !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+}
+
+[data-amplify-authenticator] button[data-variation="link"]:hover {
+  color: #764ba2 !important;
+}
+
+/* Headers and Text */
+[data-amplify-authenticator] h1,
+[data-amplify-authenticator] h2,
+[data-amplify-authenticator] h3 {
+  color: white !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+}
+
+[data-amplify-authenticator] p {
+  color: #a0aec0 !important;
+  text-align: center !important;
+}
+
+/* Error Messages */
+[data-amplify-authenticator] [data-amplify-alert] {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: #fca5a5 !important;
+  border-radius: 8px !important;
+}
+
+/* Success Messages */
+[data-amplify-authenticator] [data-amplify-alert][data-variation="success"] {
+  background: rgba(34, 197, 94, 0.1) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  color: #86efac !important;
+}
+
+/* Hide default headers and footers */
+[data-amplify-authenticator] header {
+  display: none !important;
+}
+
+/* Custom spacing and centering */
+[data-amplify-authenticator] [data-amplify-form] {
+  width: 100% !important;
+  max-width: 350px !important;
+  margin: 0 auto !important;
+}
+
+[data-amplify-authenticator] [data-amplify-form] > * + * {
+  margin-top: 20px !important;
+}
+
+[data-amplify-authenticator] [data-amplify-form] > * {
+  width: 100% !important;
+}
+
+/* Center form elements */
+[data-amplify-authenticator] [data-amplify-field-group] {
+  width: 100% !important;
+}
+
+[data-amplify-authenticator] [data-amplify-field] {
+  width: 100% !important;
+}
+
+/* Perfect centering utilities */
+.modern-auth-form [data-amplify-authenticator] {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+/* Ensure form is always centered */
+[data-amplify-authenticator] [data-amplify-router] {
+  position: relative !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+/* Center all form content */
+[data-amplify-authenticator] [data-amplify-tabs],
+[data-amplify-authenticator] [data-amplify-form],
+[data-amplify-authenticator] [data-amplify-field-group] {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modern-hero-title {
+    font-size: 36px;
+  }
+  
+  .modern-hero-description {
+    font-size: 16px;
+  }
+  
+  .modern-hero-section {
+    padding: 40px 16px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modern-auth-form {
+    max-width: 90vw;
+    width: 100%;
+  }
+  
+  .modern-features-section {
+    padding: 60px 16px;
+  }
+  
+  .modern-features-title {
+    font-size: 28px;
+  }
+  
+  .modern-features-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .modern-feature-card {
+    padding: 32px 24px;
+  }
+  
+  [data-amplify-authenticator] form {
+    padding: 32px 24px !important;
+  }
+  
+  [data-amplify-authenticator] [data-amplify-router] {
+    max-width: 95vw !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .modern-hero-title {
+    font-size: 28px;
+  }
+  
+  .modern-hero-description br {
+    display: none;
+  }
+  
+  .modern-features-grid {
+    grid-template-columns: 1fr;
+  }
+}

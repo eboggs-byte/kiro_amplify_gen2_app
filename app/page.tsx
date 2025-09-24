@@ -1,43 +1,72 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "@/amplify/data/resource";
-import "./../app/app.css";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import Chat from "./components/chat/Chat";
+import "./app.css";
 
 Amplify.configure(outputs);
 
-const client = generateClient<Schema>();
-
 export default function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+  const { signOut, user, authStatus } = useAuthenticator();
 
-    
-  const { signOut } = useAuthenticator();
-
-  function listTodos() {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
-    });
+  // Show loading while authentication is being determined
+  if (authStatus === 'configuring') {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        fontSize: '18px',
+        fontWeight: '500'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            width: '40px', 
+            height: '40px', 
+            border: '3px solid rgba(255,255,255,0.3)', 
+            borderTop: '3px solid white', 
+            borderRadius: '50%', 
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          Loading your workspace...
+        </div>
+      </div>
+    );
   }
 
-  useEffect(() => {
-    listTodos();
-  }, []);
-
-  function createTodo() {
-    client.models.Todo.create({
-      content: window.prompt("Todo content"),
-    });
+  // Only render the app if user is authenticated
+  if (authStatus !== 'authenticated' || !user) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        fontSize: '18px',
+        fontWeight: '500'
+      }}>
+        Please sign in to continue...
+      </div>
+    );
   }
 
   return (
-    <main>
-      <button onClick={signOut}>Sign out</button>
-    </main>
+    <div style={{
+      height: '100vh',
+      width: '100vw',
+      overflow: 'hidden',
+      background: '#f8fafc'
+    }}>
+      <Chat />
+    </div>
   );
 }
