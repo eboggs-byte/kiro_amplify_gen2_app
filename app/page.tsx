@@ -1,16 +1,12 @@
 "use client";
 
-import { Amplify } from "aws-amplify";
-import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import Chat from "./components/chat/Chat";
 import "./app.css";
 
-Amplify.configure(outputs);
-
 export default function App() {
-  const { signOut, user, authStatus } = useAuthenticator();
+  const { user, authStatus } = useAuthenticator();
 
   // Show loading while authentication is being determined
   if (authStatus === 'configuring') {

@@ -2,74 +2,33 @@
 "use client";
 
 import { useState } from "react";
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "@/amplify/data/resource";
+import { useAIConversation } from "@/app/client";
 import SignOutButton from "./SignOutButton";
 
-const client = generateClient<Schema>({ authMode: 'userPool' });
-
-interface Message {
-    id: string;
-    content: string;
-    role: 'user' | 'assistant';
-    timestamp: Date;
-}
-
 export default function Chat() {
-    const [messages, setMessages] = useState<Message[]>([]);
     const [inputMessage, setInputMessage] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    const [
+        {
+            data: { messages },
+            isLoading,
+        },
+        sendMessage,
+    ] = useAIConversation('chat');
 
-    const sendMessage = async () => {
+    const handleSendMessage = () => {
         if (!inputMessage.trim() || isLoading) return;
-
-        const userMessage: Message = {
-            id: Date.now().toString(),
-            content: inputMessage,
-            role: 'user',
-            timestamp: new Date(),
-        };
-
-        setMessages(prev => [...prev, userMessage]);
-        const currentInput = inputMessage;
+        
+        sendMessage({
+            content: [{ text: inputMessage }]
+        });
+        
         setInputMessage("");
-        setIsLoading(true);
-
-        try {
-            // Use the generation API for reliable responses
-            const response = await client.generations.generateResponse({
-                prompt: currentInput,
-            });
-
-            if (response.data?.response) {
-                const assistantMessage: Message = {
-                    id: (Date.now() + 1).toString(),
-                    content: response.data.response,
-                    role: 'assistant',
-                    timestamp: new Date(),
-                };
-                setMessages(prev => [...prev, assistantMessage]);
-            } else {
-                throw new Error("No response received from AI");
-            }
-        } catch (error) {
-            console.error("Error sending message:", error);
-            const errorMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                content: "Sorry, there was an error processing your message. Please try again.",
-                role: 'assistant',
-                timestamp: new Date(),
-            };
-            setMessages(prev => [...prev, errorMessage]);
-        } finally {
-            setIsLoading(false);
-        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            sendMessage();
+            handleSendMessage();
         }
     };
 
@@ -294,7 +253,11 @@ export default function Chat() {
                                     lineHeight: '1.6',
                                     fontSize: '15px'
                                 }}>
-                                    {message.content}
+                                    {message.content.map((content, index) => (
+                                        <span key={index}>
+                                            {'text' in content ? content.text : ''}
+                                        </span>
+                                    ))}
                                 </div>
                                 <div style={{
                                     fontSize: '11px',
@@ -302,7 +265,7 @@ export default function Chat() {
                                     opacity: 0.6,
                                     textAlign: 'right'
                                 }}>
-                                    {message.timestamp.toLocaleTimeString([], {
+                                    {new Date(message.createdAt).toLocaleTimeString([], {
                                         hour: '2-digit',
                                         minute: '2-digit'
                                     })}
@@ -448,7 +411,7 @@ export default function Chat() {
                         />
                     </div>
                     <button
-                        onClick={sendMessage}
+                        onClick={handleSendMessage}
                         disabled={!inputMessage.trim() || isLoading}
                         style={{
                             padding: '18px',
