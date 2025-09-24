@@ -16,10 +16,10 @@ const components = {
       return (
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h2 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: '600', color: 'white' }}>
-            Welcome to Chat
+            Welcome!
           </h2>
           <p style={{ margin: 0, fontSize: '16px', color: '#a0aec0' }}>
-            Sign in to start chatting with Claude
+            Sign in to evaluate your ideas
           </p>
         </div>
       );
@@ -36,7 +36,7 @@ const components = {
             Create Account
           </h2>
           <p style={{ margin: 0, fontSize: '16px', color: '#a0aec0' }}>
-            Join to start chatting with Claude
+            Join Today
           </p>
         </div>
       );
@@ -58,11 +58,11 @@ export default function AuthenticatorWrapper({
       <div className="modern-hero-section">
         <div className="modern-hero-content">
           <h1 className="modern-hero-title">
-            Chat with Claude.<br />
+            Evaluate Your Idea<br />
             Intelligently.
           </h1>
           <p className="modern-hero-description">
-            Your AI assistant powered by Claude Haiku.<br />
+            Helps users quickly evaluate whether their app or startup idea is a good business opportunity<br />
             Ask questions, get help, and explore ideas together.<br />
           </p>
 

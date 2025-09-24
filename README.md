@@ -1,25 +1,38 @@
+# Company Sage SaaS App
+
+**Overview:**  
+Company Sage is an AI-powered SaaS platform to validate new business ideas. Input as much detail as possible about your concept and industry, and the app uses AI to analyze and provide feedback on whether your app could be a promising venture.
+
+---
+
 ## AWS Amplify Next.js (App Router) Starter Template
 
-This repository provides a starter template for creating applications using Next.js (App Router) and AWS Amplify, emphasizing easy setup for authentication, API, and database capabilities.
+This repository provides a jumpstart for building scalable SaaS tools with Next.js App Router and AWS Amplify, including seamless integrations for authentication, APIs, and a robust database.
 
-## Overview
-
-This template equips you with a foundational Next.js application integrated with AWS Amplify, streamlined for scalability and performance. It is ideal for developers looking to jumpstart their project with pre-configured AWS services like Cognito, AppSync, and DynamoDB.
+---
 
 ## Features
 
-- **Authentication**: Setup with Amazon Cognito for secure user authentication.
-- **API**: Ready-to-use GraphQL endpoint with AWS AppSync.
-- **Database**: Real-time database powered by Amazon DynamoDB.
+- **Business Idea Validation:**  
+  AI-powered analysis to score and assess your app concept’s viability.
 
-## Deploying to AWS
+- **Authentication:**  
+  Secure user accounts with Amazon Cognito.
 
-For detailed instructions on deploying your application, refer to the [deployment section](https://docs.amplify.aws/nextjs/start/quickstart/nextjs-app-router-client-components/#deploy-a-fullstack-app-to-aws) of our documentation.
+- **API:**  
+  Scalable GraphQL endpoint using AWS AppSync.
 
-## Security
+- **Database:**  
+  Real-time, multi-tenant data powered by Amazon DynamoDB.
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+- **Chat Sessions:**  
+  - Create, rename, and delete chat sessions  
+  - Persistent chat history across sessions  
+  - Multi-tenant isolation  
+  - Real-time chat interface
 
-## License
-
-This library is licensed under the MIT-0 License. See the LICENSE file.
+- **Document Management:**  
+  - Upload and manage documents  
+  - Supported file types: PDF, Word, Text, Markdown  
+  - Tenant-isolated storage  
+  - Secure document access
