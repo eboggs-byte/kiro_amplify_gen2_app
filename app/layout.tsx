@@ -1,8 +1,8 @@
 import React from "react";
-import { ConfigureAmplify } from "./ConfigureAmplify";
 import "./app.css";
 import AuthenticatorWrapper from "./components/auth/AuthenticatorWrapper";
 import "@aws-amplify/ui-react/styles.css";
+import { ConfigureAmplify } from "./ConfigureAmplify";
 
 export default function RootLayout({
   children,
@@ -12,10 +12,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ConfigureAmplify />
-        <AuthenticatorWrapper>
-          {children}
-        </AuthenticatorWrapper>
+        <ConfigureAmplify>
+          <AuthenticatorWrapper>
+            {children}
+          </AuthenticatorWrapper>
+        </ConfigureAmplify>
       </body>
     </html>
   );

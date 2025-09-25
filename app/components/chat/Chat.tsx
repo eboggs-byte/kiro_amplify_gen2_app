@@ -2,27 +2,84 @@
 "use client";
 
 import { useState } from "react";
-import { useAIConversation } from "@/app/client";
+import { generateClient } from "aws-amplify/data";
+import type { Schema } from "@/amplify/data/resource";
 import SignOutButton from "./SignOutButton";
+
+const client = generateClient<Schema>({ authMode: 'userPool' });
+
+interface Message {
+    id: string;
+    content: string;
+    role: 'user' | 'assistant';
+    timestamp: Date;
+}
 
 export default function Chat() {
     const [inputMessage, setInputMessage] = useState("");
-    const [
-        {
-            data: { messages },
-            isLoading,
-        },
-        sendMessage,
-    ] = useAIConversation('chat');
+    const [debugInfo, setDebugInfo] = useState("");
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         if (!inputMessage.trim() || isLoading) return;
-        
-        sendMessage({
-            content: [{ text: inputMessage }]
-        });
-        
+
+        console.log('Attempting to send message:', inputMessage);
+        setDebugInfo(`Sending: "${inputMessage}"`);
+        setIsLoading(true);
+
+        // Add user message immediately
+        const userMessage: Message = {
+            id: Date.now().toString(),
+            content: inputMessage,
+            role: 'user',
+            timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, userMessage]);
+
+        const currentInput = inputMessage;
         setInputMessage("");
+
+        try {
+            // Use the generation API
+            console.log('Calling generation API with prompt:', currentInput);
+            const response = await client.generations.generateResponse({
+                prompt: currentInput,
+            });
+
+            console.log('Full API response:', response);
+            console.log('Response data:', response.data);
+            console.log('Response errors:', response.errors);
+
+            if (response.data?.response && response.data.response.trim()) {
+                const assistantMessage: Message = {
+                    id: (Date.now() + 1).toString(),
+                    content: response.data.response,
+                    role: 'assistant',
+                    timestamp: new Date(),
+                };
+                setMessages(prev => [...prev, assistantMessage]);
+                setDebugInfo("");
+            } else if (response.errors && response.errors.length > 0) {
+                console.error('API returned errors:', response.errors);
+                throw new Error(`API Error: ${response.errors[0].message}`);
+            } else {
+                console.error('AI returned empty response:', response);
+                throw new Error("AI returned an empty response. Please try again.");
+            }
+        } catch (error: any) {
+            console.error('Error sending message:', error);
+            setDebugInfo(`Error: ${error?.message || 'Unknown error'}`);
+            const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                content: "Sorry, there was an error processing your message. Please try again.",
+                role: 'assistant',
+                timestamp: new Date(),
+            };
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -117,6 +174,25 @@ export default function Chat() {
                     backgroundSize: '30px 30px',
                     pointerEvents: 'none'
                 }}></div>
+
+
+
+                {debugInfo && (
+                    <div style={{
+                        margin: '16px 0',
+                        padding: '12px 16px',
+                        background: 'rgba(59, 130, 246, 0.1)',
+                        border: '1px solid rgba(59, 130, 246, 0.3)',
+                        borderRadius: '8px',
+                        color: '#1d4ed8',
+                        fontSize: '14px',
+                        textAlign: 'center',
+                        position: 'relative',
+                        zIndex: 1
+                    }}>
+                        Debug: {debugInfo}
+                    </div>
+                )}
 
                 {messages.length === 0 ? (
                     <div style={{
@@ -253,11 +329,7 @@ export default function Chat() {
                                     lineHeight: '1.6',
                                     fontSize: '15px'
                                 }}>
-                                    {message.content.map((content, index) => (
-                                        <span key={index}>
-                                            {'text' in content ? content.text : ''}
-                                        </span>
-                                    ))}
+                                    {message.content}
                                 </div>
                                 <div style={{
                                     fontSize: '11px',
@@ -265,7 +337,7 @@ export default function Chat() {
                                     opacity: 0.6,
                                     textAlign: 'right'
                                 }}>
-                                    {new Date(message.createdAt).toLocaleTimeString([], {
+                                    {message.timestamp.toLocaleTimeString([], {
                                         hour: '2-digit',
                                         minute: '2-digit'
                                     })}
