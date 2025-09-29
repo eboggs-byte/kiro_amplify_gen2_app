@@ -1,9 +1,10 @@
 // Chat.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
+import { BusinessIdeaData } from '../business/BusinessIdeaForm';
 import SignOutButton from "./SignOutButton";
 
 interface Message {
@@ -13,13 +14,88 @@ interface Message {
     timestamp: Date;
 }
 
-export default function Chat() {
+interface ChatProps {
+  businessData?: BusinessIdeaData;
+}
+
+export default function Chat({ businessData }: ChatProps = {}) {
     const [inputMessage, setInputMessage] = useState("");
     const [debugInfo, setDebugInfo] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [testResult, setTestResult] = useState<string>('');
     const [isTesting, setIsTesting] = useState(false);
+    const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+    // 🗄️ CREATE OR LOAD CONVERSATION
+    useEffect(() => {
+        const initializeConversation = async () => {
+            setIsLoadingHistory(true);
+            try {
+                const client = generateClient<Schema>({ authMode: 'userPool' });
+                
+                // Create a new conversation
+                const conversationTitle = businessData?.businessIdea 
+                    ? `Business: ${businessData.businessIdea.substring(0, 50)}${businessData.businessIdea.length > 50 ? '...' : ''}`
+                    : `Chat Session ${new Date().toLocaleDateString()}`;
+
+                const newConversation = await client.models.Conversation.create({
+                    title: conversationTitle,
+                    businessIdea: businessData?.businessIdea || '',
+                    targetMarket: businessData?.targetMarket || '',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                });
+
+                if (newConversation.data?.id) {
+                    setCurrentConversationId(newConversation.data.id);
+                    console.log('✅ New conversation created:', newConversation.data.id);
+                }
+            } catch (error) {
+                console.error('❌ Error creating conversation:', error);
+            } finally {
+                setIsLoadingHistory(false);
+            }
+        };
+
+        initializeConversation();
+    }, []); // Only run once on mount
+
+    // 💾 SAVE MESSAGE TO DATABASE
+    const saveMessage = async (content: string, role: 'user' | 'assistant') => {
+        if (!currentConversationId) return;
+
+        try {
+            const client = generateClient<Schema>({ authMode: 'userPool' });
+            await client.models.Message.create({
+                conversationId: currentConversationId,
+                content: content,
+                role: role,
+                timestamp: new Date().toISOString(),
+            });
+            console.log(`✅ ${role} message saved to database`);
+        } catch (error) {
+            console.error(`❌ Error saving ${role} message:`, error);
+        }
+    };
+
+    // 🎯 GENERATE CONTEXTUAL PROMPT
+    const generateContextualPrompt = (userInput: string) => {
+        if (!businessData?.businessIdea && !businessData?.targetMarket) {
+            return userInput;
+        }
+        
+        let context = "Business Context:\n";
+        if (businessData.businessIdea) {
+            context += `Business Idea: ${businessData.businessIdea}\n`;
+        }
+        if (businessData.targetMarket) {
+            context += `Target Market: ${businessData.targetMarket}\n`;
+        }
+        context += `\nQuestion: ${userInput}\n\nPlease provide specific advice based on my business context.`;
+        return context;
+    };
 
     const handleSendMessage = async () => {
         if (!inputMessage.trim() || isLoading) return;
@@ -39,6 +115,9 @@ export default function Chat() {
 
         const currentInput = inputMessage;
         setInputMessage("");
+
+        // 💾 Save user message to database
+        await saveMessage(currentInput, 'user');
 
         try {
             // 🔧 CREATE FRESH CLIENT (Same as working test button)
@@ -71,6 +150,9 @@ export default function Chat() {
                 };
                 setMessages(prev => [...prev, assistantMessage]);
                 setDebugInfo(""); // Clear any debug info on success
+                
+                // 💾 Save assistant message to database
+                await saveMessage(response.data.response, 'assistant');
             }
             // ⚠️ NULL RESPONSE CASE - Claude returned null (usually prompt too long/complex)
             else if (response.data?.response === null && response.data?.error === null) {

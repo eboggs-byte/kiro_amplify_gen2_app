@@ -2,7 +2,7 @@
 
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
-import Chat from "./components/chat/Chat";
+import BusinessDashboard from "./components/dashboard/BusinessDashboard";
 import "./app.css";
 
 export default function App() {
@@ -55,14 +55,5 @@ export default function App() {
     );
   }
 
-  return (
-    <div style={{
-      height: '100vh',
-      width: '100vw',
-      overflow: 'hidden',
-      background: '#f8fafc'
-    }}>
-      <Chat />
-    </div>
-  );
+  return <BusinessDashboard />;
 }

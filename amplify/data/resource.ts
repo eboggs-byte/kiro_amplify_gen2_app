@@ -1,6 +1,30 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
 const schema = a.schema({
+  // 🗄️ CONVERSATION MODEL - Stores chat sessions
+  Conversation: a
+    .model({
+      title: a.string().required(),
+      businessIdea: a.string(), // Optional: store business context
+      targetMarket: a.string(), // Optional: store target market
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
+      messages: a.hasMany('Message', 'conversationId'), // Add the hasMany relationship
+    })
+    .authorization((allow) => [allow.owner()]),
+
+  // 💬 MESSAGE MODEL - Stores individual chat messages
+  Message: a
+    .model({
+      conversationId: a.id().required(),
+      content: a.string().required(),
+      role: a.enum(['user', 'assistant']),
+      timestamp: a.datetime().required(),
+      conversation: a.belongsTo('Conversation', 'conversationId'),
+    })
+    .authorization((allow) => [allow.owner()]),
+
+  // 🤖 AI GENERATION - Your existing Claude integration
   generateResponse: a
     .generation({
       aiModel: a.ai.model("Claude 3.5 Sonnet"),
