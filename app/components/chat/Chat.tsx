@@ -6,8 +6,6 @@ import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 import SignOutButton from "./SignOutButton";
 
-const client = generateClient<Schema>({ authMode: 'userPool' });
-
 interface Message {
     id: string;
     content: string;
@@ -20,6 +18,8 @@ export default function Chat() {
     const [debugInfo, setDebugInfo] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [testResult, setTestResult] = useState<string>('');
+    const [isTesting, setIsTesting] = useState(false);
 
     const handleSendMessage = async () => {
         if (!inputMessage.trim() || isLoading) return;
@@ -41,17 +41,28 @@ export default function Chat() {
         setInputMessage("");
 
         try {
-            // Use the generation API
-            console.log('Calling generation API with prompt:', currentInput);
-            const response = await client.generations.generateResponse({
-                prompt: currentInput,
+            // 🔧 CREATE FRESH CLIENT (Same as working test button)
+            // This was the key fix - creating a new client each time instead of reusing a global one
+            console.log('💬 Starting chat message...');
+            const chatClient = generateClient<Schema>({ authMode: 'userPool' });
+            console.log('✅ Chat client created');
+
+            // 📊 LOG PROMPT DETAILS (For debugging)
+            console.log('Original prompt:', currentInput);
+            console.log('Prompt length:', currentInput.length);
+
+            // 🎯 SEND FULL PROMPT (No character limits - use full context window)
+            console.log('Sending full prompt to Claude 3.5 Sonnet');
+
+            // 🚀 CALL BEDROCK API with full prompt (No truncation)
+            const response = await chatClient.generations.generateResponse({
+                prompt: currentInput
             });
 
-            console.log('Full API response:', response);
-            console.log('Response data:', response.data);
-            console.log('Response errors:', response.errors);
+            console.log('📥 Chat response:', response);
 
-            if (response.data?.response && response.data.response.trim()) {
+            // ✅ SUCCESS CASE - Claude returned a valid response
+            if (response.data?.response) {
                 const assistantMessage: Message = {
                     id: (Date.now() + 1).toString(),
                     content: response.data.response,
@@ -59,20 +70,44 @@ export default function Chat() {
                     timestamp: new Date(),
                 };
                 setMessages(prev => [...prev, assistantMessage]);
-                setDebugInfo("");
-            } else if (response.errors && response.errors.length > 0) {
-                console.error('API returned errors:', response.errors);
-                throw new Error(`API Error: ${response.errors[0].message}`);
-            } else {
-                console.error('AI returned empty response:', response);
-                throw new Error("AI returned an empty response. Please try again.");
+                setDebugInfo(""); // Clear any debug info on success
+            }
+            // ⚠️ NULL RESPONSE CASE - Claude returned null (usually prompt too long/complex)
+            else if (response.data?.response === null && response.data?.error === null) {
+                const errorMessage: Message = {
+                    id: (Date.now() + 1).toString(),
+                    content: `Claude returned null response. This might be due to prompt length (${currentInput.length} chars) or content. Try a shorter, simpler question like "Hello" or "What is AWS?"`,
+                    role: 'assistant',
+                    timestamp: new Date(),
+                };
+                setMessages(prev => [...prev, errorMessage]);
+            }
+            // ❌ API ERROR CASE - Bedrock returned specific errors
+            else if (response.errors && response.errors.length > 0) {
+                const errorMessage: Message = {
+                    id: (Date.now() + 1).toString(),
+                    content: `API ERROR: ${response.errors[0].message}`,
+                    role: 'assistant',
+                    timestamp: new Date(),
+                };
+                setMessages(prev => [...prev, errorMessage]);
+            }
+            // 🤔 UNKNOWN RESPONSE CASE - Something unexpected happened
+            else {
+                const errorMessage: Message = {
+                    id: (Date.now() + 1).toString(),
+                    content: `EMPTY RESPONSE: ${JSON.stringify(response, null, 2)}`,
+                    role: 'assistant',
+                    timestamp: new Date(),
+                };
+                setMessages(prev => [...prev, errorMessage]);
             }
         } catch (error: any) {
-            console.error('Error sending message:', error);
-            setDebugInfo(`Error: ${error?.message || 'Unknown error'}`);
+            // 💥 CONNECTION ERROR CASE - Network or authentication issues
+            console.error('❌ Chat failed:', error);
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
-                content: "Sorry, there was an error processing your message. Please try again.",
+                content: `CONNECTION FAILED: ${error.message || 'Unknown error'}`,
                 role: 'assistant',
                 timestamp: new Date(),
             };
@@ -86,6 +121,37 @@ export default function Chat() {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSendMessage();
+        }
+    };
+
+    const testBedrockConnection = async () => {
+        setIsTesting(true);
+        setTestResult('🔄 Testing Bedrock connection...');
+
+        try {
+            console.log('🧪 Starting Bedrock test...');
+
+            const testClient = generateClient<Schema>({ authMode: 'userPool' });
+            console.log('✅ Test client created');
+
+            const response = await testClient.generations.generateResponse({
+                prompt: 'Say "Hello from Claude!" and nothing else.'
+            });
+
+            console.log('📥 Test response:', response);
+
+            if (response.data?.response) {
+                setTestResult(`✅ SUCCESS!\nClaude responded: "${response.data.response}"`);
+            } else if (response.errors && response.errors.length > 0) {
+                setTestResult(`❌ API ERROR:\n${response.errors[0].message}`);
+            } else {
+                setTestResult(`❌ EMPTY RESPONSE:\n${JSON.stringify(response, null, 2)}`);
+            }
+        } catch (error: any) {
+            console.error('❌ Test failed:', error);
+            setTestResult(`❌ CONNECTION FAILED:\n${error.message || 'Unknown error'}`);
+        } finally {
+            setIsTesting(false);
         }
     };
 
@@ -151,9 +217,54 @@ export default function Chat() {
                         }}></div>
                         Online
                     </div>
+                    <button
+                        onClick={testBedrockConnection}
+                        disabled={isTesting}
+                        style={{
+                            padding: '8px 16px',
+                            background: isTesting ? '#6b7280' : '#10b981',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: isTesting ? 'not-allowed' : 'pointer',
+                            marginRight: '12px'
+                        }}
+                    >
+                        {isTesting ? '🔄 Testing...' : '🧪 Test Bedrock'}
+                    </button>
                     <SignOutButton />
                 </div>
             </div>
+
+            {/* Test Result Area */}
+            {testResult && (
+                <div style={{
+                    padding: '16px 32px',
+                    background: testResult.includes('SUCCESS') ? '#dcfce7' : '#fef2f2',
+                    borderBottom: '1px solid #e5e7eb',
+                    color: testResult.includes('SUCCESS') ? '#166534' : '#dc2626',
+                    fontSize: '14px',
+                    fontFamily: 'monospace'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{testResult}</pre>
+                        <button
+                            onClick={() => setTestResult('')}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                fontSize: '16px',
+                                cursor: 'pointer',
+                                marginLeft: '16px'
+                            }}
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Messages Area */}
             <div style={{
@@ -235,7 +346,7 @@ export default function Chat() {
                             maxWidth: '500px',
                             margin: '0 auto 24px auto'
                         }}>
-                            I'm Claude Haiku, your intelligent AI assistant. I can help with questions, analysis, creative tasks, and much more.
+                            I'm Claude, your AWS and cloud computing assistant. Ask me about AWS services, architecture, and best practices!
                         </p>
                         <div style={{
                             display: 'flex',
@@ -244,35 +355,68 @@ export default function Chat() {
                             flexWrap: 'wrap',
                             marginTop: '32px'
                         }}>
-                            <div style={{
-                                padding: '12px 20px',
-                                background: 'rgba(102, 126, 234, 0.1)',
-                                borderRadius: '20px',
-                                fontSize: '14px',
-                                color: '#667eea',
-                                fontWeight: '500'
-                            }}>
-                                💡 Ask questions
+                            <div 
+                                onClick={() => setInputMessage("What AWS services can I use?")}
+                                style={{
+                                    padding: '12px 20px',
+                                    background: 'rgba(102, 126, 234, 0.1)',
+                                    borderRadius: '20px',
+                                    fontSize: '14px',
+                                    color: '#667eea',
+                                    fontWeight: '500',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.2)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
+                                }}
+                            >
+                                ☁️ AWS Services
                             </div>
-                            <div style={{
-                                padding: '12px 20px',
-                                background: 'rgba(102, 126, 234, 0.1)',
-                                borderRadius: '20px',
-                                fontSize: '14px',
-                                color: '#667eea',
-                                fontWeight: '500'
-                            }}>
-                                📝 Get help writing
+                            <div 
+                                onClick={() => setInputMessage("How do I deploy to AWS?")}
+                                style={{
+                                    padding: '12px 20px',
+                                    background: 'rgba(102, 126, 234, 0.1)',
+                                    borderRadius: '20px',
+                                    fontSize: '14px',
+                                    color: '#667eea',
+                                    fontWeight: '500',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.2)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
+                                }}
+                            >
+                                🚀 Deployment
                             </div>
-                            <div style={{
-                                padding: '12px 20px',
-                                background: 'rgba(102, 126, 234, 0.1)',
-                                borderRadius: '20px',
-                                fontSize: '14px',
-                                color: '#667eea',
-                                fontWeight: '500'
-                            }}>
-                                🔍 Analyze ideas
+                            <div 
+                                onClick={() => setInputMessage("What is serverless computing?")}
+                                style={{
+                                    padding: '12px 20px',
+                                    background: 'rgba(102, 126, 234, 0.1)',
+                                    borderRadius: '20px',
+                                    fontSize: '14px',
+                                    color: '#667eea',
+                                    fontWeight: '500',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.2)';
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
+                                }}
+                            >
+                                ⚡ Serverless
                             </div>
                         </div>
                     </div>
@@ -460,7 +604,7 @@ export default function Chat() {
                                 borderRadius: '20px',
                                 resize: 'none',
                                 minHeight: '24px',
-                                maxHeight: '120px',
+                                maxHeight: '300px',
                                 fontFamily: 'inherit',
                                 fontSize: '16px',
                                 outline: 'none',

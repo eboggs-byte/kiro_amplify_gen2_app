@@ -9,10 +9,12 @@ export const ConfigureAmplify = ({ children }: { children: React.ReactNode }) =>
 
     useEffect(() => {
         try {
+            console.log('🔧 Configuring Amplify...');
             Amplify.configure(config);
+            console.log('✅ Amplify configured successfully');
             setIsConfigured(true);
         } catch (error) {
-            console.error('Error configuring Amplify:', error);
+            console.error('❌ Error configuring Amplify:', error);
         }
     }, []);
 
@@ -38,7 +40,7 @@ export const ConfigureAmplify = ({ children }: { children: React.ReactNode }) =>
                         animation: 'spin 1s linear infinite',
                         margin: '0 auto 16px'
                     }}></div>
-                    Initializing...
+                    Configuring AWS Amplify...
                 </div>
             </div>
         );
