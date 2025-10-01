@@ -582,69 +582,6 @@ export default function Chat({ businessData }: ChatProps = {}) {
               flexWrap: 'wrap',
               marginTop: '32px'
             }}>
-              <div
-                onClick={() => setInputMessage("Analyze my business idea")}
-                style={{
-                  padding: '12px 20px',
-                  background: '#374151',
-                  borderRadius: '20px',
-                  fontSize: '14px',
-                  color: 'white',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = '#4b5563';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = '#374151';
-                }}
-              >
-                💡 Analyze Business Idea
-              </div>
-              <div
-                onClick={() => setInputMessage("What strategic questions should I consider?")}
-                style={{
-                  padding: '12px 20px',
-                  background: '#374151',
-                  borderRadius: '20px',
-                  fontSize: '14px',
-                  color: 'white',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = '#4b5563';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = '#374151';
-                }}
-              >
-                🎯 Strategic Questions
-              </div>
-              <div
-                onClick={() => setInputMessage("Help me evaluate market potential")}
-                style={{
-                  padding: '12px 20px',
-                  background: '#374151',
-                  borderRadius: '20px',
-                  fontSize: '14px',
-                  color: 'white',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = '#4b5563';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = '#374151';
-                }}
-              >
-                📊 Market Analysis
-              </div>
             </div>
           </div>
                 ) : (
