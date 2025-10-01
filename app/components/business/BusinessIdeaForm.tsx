@@ -28,44 +28,32 @@ export default function BusinessIdeaForm({ onFormChange, initialData }: Business
 
   return (
     <div style={{
-      padding: '32px',
+      padding: '40px',
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      background: 'white'
+      background: '#1f2937',
+      color: 'white'
     }}>
       {/* Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={{
-          width: '60px',
-          height: '60px',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          borderRadius: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '24px',
-          marginBottom: '16px',
-          boxShadow: '0 8px 20px rgba(102, 126, 234, 0.3)'
-        }}>
-          💡
-        </div>
+      <div style={{ marginBottom: '40px' }}>
         <h1 style={{
           margin: 0,
-          fontSize: '28px',
-          fontWeight: '800',
-          color: '#1f2937',
-          marginBottom: '8px'
+          fontSize: '32px',
+          fontWeight: '700',
+          color: 'white',
+          marginBottom: '16px',
+          lineHeight: '1.2'
         }}>
-          Business Idea Validator
+          Validate Your Vision
         </h1>
         <p style={{
           margin: 0,
           fontSize: '16px',
-          color: '#6b7280',
-          lineHeight: '1.5'
+          color: '#d1d5db',
+          lineHeight: '1.6'
         }}>
-          Share your business idea and target market. Claude will provide personalized feedback and insights.
+          AI-Powered Strategy & Marketing Intelligence
         </p>
       </div>
 
@@ -77,35 +65,35 @@ export default function BusinessIdeaForm({ onFormChange, initialData }: Business
             display: 'block',
             fontSize: '14px',
             fontWeight: '600',
-            color: '#374151',
-            marginBottom: '8px'
+            color: 'white',
+            marginBottom: '12px'
           }}>
             What's your business idea? *
           </label>
           <textarea
             value={formData.businessIdea}
             onChange={(e) => handleInputChange('businessIdea', e.target.value)}
-            placeholder="Describe your business concept, product, or service idea in detail..."
+            placeholder="What's your business idea?"
             style={{
               width: '100%',
               minHeight: '120px',
               padding: '16px',
-              border: '2px solid #e5e7eb',
+              border: 'none',
               borderRadius: '12px',
               fontSize: '15px',
               fontFamily: 'inherit',
               resize: 'vertical',
               outline: 'none',
               transition: 'all 0.2s ease',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              background: '#374151',
+              color: 'white'
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = '#667eea';
-              e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+              e.target.style.background = '#4b5563';
             }}
             onBlur={(e) => {
-              e.target.style.borderColor = '#e5e7eb';
-              e.target.style.boxShadow = 'none';
+              e.target.style.background = '#374151';
             }}
           />
         </div>
@@ -116,45 +104,45 @@ export default function BusinessIdeaForm({ onFormChange, initialData }: Business
             display: 'block',
             fontSize: '14px',
             fontWeight: '600',
-            color: '#374151',
-            marginBottom: '8px'
+            color: 'white',
+            marginBottom: '12px'
           }}>
             Who is your target market? *
           </label>
           <textarea
             value={formData.targetMarket}
             onChange={(e) => handleInputChange('targetMarket', e.target.value)}
-            placeholder="Describe your ideal customers, their demographics, needs, and pain points..."
+            placeholder="Who is your target market?"
             style={{
               width: '100%',
               minHeight: '120px',
               padding: '16px',
-              border: '2px solid #e5e7eb',
+              border: 'none',
               borderRadius: '12px',
               fontSize: '15px',
               fontFamily: 'inherit',
               resize: 'vertical',
               outline: 'none',
               transition: 'all 0.2s ease',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              background: '#374151',
+              color: 'white'
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = '#667eea';
-              e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+              e.target.style.background = '#4b5563';
             }}
             onBlur={(e) => {
-              e.target.style.borderColor = '#e5e7eb';
-              e.target.style.boxShadow = 'none';
+              e.target.style.background = '#374151';
             }}
           />
         </div>
 
         {/* Progress Indicator */}
         <div style={{
-          padding: '16px',
-          background: isComplete ? '#dcfce7' : '#f8fafc',
+          padding: '20px',
+          background: isComplete ? '#065f46' : '#374151',
           borderRadius: '12px',
-          border: `1px solid ${isComplete ? '#10b981' : '#e2e8f0'}`
+          border: `1px solid ${isComplete ? '#10b981' : '#4b5563'}`
         }}>
           <div style={{
             display: 'flex',
@@ -163,23 +151,23 @@ export default function BusinessIdeaForm({ onFormChange, initialData }: Business
             marginBottom: '8px'
           }}>
             <div style={{
-              width: '20px',
-              height: '20px',
-              background: isComplete ? '#10b981' : '#e5e7eb',
+              width: '24px',
+              height: '24px',
+              background: isComplete ? '#10b981' : '#6b7280',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: 'white',
-              fontSize: '12px',
+              fontSize: '14px',
               fontWeight: '600'
             }}>
-              {isComplete ? '✓' : ''}
+              {isComplete ? '✓' : '...'}
             </div>
             <span style={{
               fontSize: '14px',
               fontWeight: '500',
-              color: isComplete ? '#059669' : '#6b7280'
+              color: isComplete ? '#34d399' : '#d1d5db'
             }}>
               {isComplete ? 'Ready for AI feedback!' : 'Fill out both fields to get started'}
             </span>
@@ -187,7 +175,7 @@ export default function BusinessIdeaForm({ onFormChange, initialData }: Business
           <p style={{
             margin: 0,
             fontSize: '13px',
-            color: '#6b7280',
+            color: '#9ca3af',
             lineHeight: '1.4'
           }}>
             The more detailed your responses, the better feedback Claude can provide.

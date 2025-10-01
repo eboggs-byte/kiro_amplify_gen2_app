@@ -14,30 +14,39 @@ export default function TwoPaneLayout({ leftPane, rightPane }: TwoPaneLayoutProp
       height: '100vh',
       width: '100vw',
       overflow: 'hidden',
-      background: '#f8fafc'
+      background: '#f3f4f6',
+      padding: '20px',
+      boxSizing: 'border-box'
     }}>
-      {/* Left Pane - Business Form */}
+      {/* Main Container */}
       <div style={{
-        width: '40%',
-        minWidth: '400px',
-        maxWidth: '600px',
-        background: 'white',
-        borderRight: '1px solid #e2e8f0',
         display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '2px 0 10px rgba(0, 0, 0, 0.05)'
+        width: '100%',
+        height: '100%',
+        background: '#1f2937',
+        borderRadius: '24px',
+        overflow: 'hidden',
+        boxShadow: '0 25px 50px rgba(0, 0, 0, 0.15)'
       }}>
-        {leftPane}
-      </div>
+        {/* Left Pane - Business Form */}
+        <div style={{
+          width: '30%',
+          minWidth: '400px',
+          display: 'flex',
+          flexDirection: 'column',
+          borderRight: '1px solid #374151'
+        }}>
+          {leftPane}
+        </div>
 
-      {/* Right Pane - Chatbot */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        background: '#f8fafc'
-      }}>
-        {rightPane}
+        {/* Right Pane - Chatbot */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          {rightPane}
+        </div>
       </div>
     </div>
   );

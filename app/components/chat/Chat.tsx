@@ -101,7 +101,7 @@ export default function Chat({ businessData }: ChatProps = {}) {
         if (!inputMessage.trim() || isLoading) return;
 
         console.log('Attempting to send message:', inputMessage);
-        setDebugInfo(`Sending: "${inputMessage}"`);
+        // setDebugInfo(`Sending: "${inputMessage}"`);
         setIsLoading(true);
 
         // Add user message immediately
@@ -237,43 +237,42 @@ export default function Chat({ businessData }: ChatProps = {}) {
         }
     };
 
-    return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100vh',
-            background: 'white',
-            overflow: 'hidden'
-        }}>
-            {/* Chat Header */}
-            <div style={{
-                padding: '20px 32px',
-                background: 'linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%)',
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100vh',
+      background: '#1f2937',
+      overflow: 'hidden'
+    }}>
+      {/* Chat Header */}
+      <div style={{
+        padding: '24px 32px',
+        background: '#1f2937',
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderBottom: '1px solid #374151'
+      }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{
-                        width: '40px',
-                        height: '40px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        width: '48px',
+                        height: '48px',
+                        background: '#7c3aed',
                         borderRadius: '12px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '20px',
-                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                        fontSize: '24px'
                     }}>
-                        🤖
+                        💬
                     </div>
                     <div>
-                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700' }}>
-                            Claude Haiku
+                        <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'white' }}>
+                            Ready to Chat
                         </h3>
-                        <p style={{ margin: 0, fontSize: '13px', opacity: 0.8 }}>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#d1d5db' }}>
                             AI Assistant • Ready to help
                         </p>
                     </div>
@@ -299,7 +298,7 @@ export default function Chat({ businessData }: ChatProps = {}) {
                         }}></div>
                         Online
                     </div>
-                    <button
+                    {/* <button
                         onClick={testBedrockConnection}
                         disabled={isTesting}
                         style={{
@@ -315,7 +314,7 @@ export default function Chat({ businessData }: ChatProps = {}) {
                         }}
                     >
                         {isTesting ? '🔄 Testing...' : '🧪 Test Bedrock'}
-                    </button>
+                    </button> */}
                     <SignOutButton />
                 </div>
             </div>
@@ -348,29 +347,29 @@ export default function Chat({ businessData }: ChatProps = {}) {
                 </div>
             )}
 
-            {/* Messages Area */}
-            <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                padding: '24px 32px',
-                background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-                position: 'relative'
-            }}>
-                {/* Background Pattern */}
-                <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(102, 126, 234, 0.1) 1px, transparent 0)',
-                    backgroundSize: '30px 30px',
-                    pointerEvents: 'none'
-                }}></div>
+      {/* Messages Area */}
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '24px 32px',
+        background: '#1f2937',
+        position: 'relative'
+      }}>
+        {/* Background Pattern */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(124, 58, 237, 0.1) 1px, transparent 0)',
+          backgroundSize: '30px 30px',
+          pointerEvents: 'none'
+        }}></div>
 
 
 
-                {debugInfo && (
+                {/* {debugInfo && (
                     <div style={{
                         margin: '16px 0',
                         padding: '12px 16px',
@@ -385,123 +384,118 @@ export default function Chat({ businessData }: ChatProps = {}) {
                     }}>
                         Debug: {debugInfo}
                     </div>
-                )}
+                )} */}
 
-                {messages.length === 0 ? (
-                    <div style={{
-                        textAlign: 'center',
-                        padding: '80px 20px',
-                        color: '#6b7280',
-                        position: 'relative',
-                        zIndex: 1
-                    }}>
-                        <div style={{
-                            width: '100px',
-                            height: '100px',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            borderRadius: '24px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 32px',
-                            fontSize: '40px',
-                            boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)',
-                            animation: 'float 3s ease-in-out infinite'
-                        }}>
-                            💬
-                        </div>
-                        <h3 style={{
-                            margin: '0 0 12px 0',
-                            fontSize: '28px',
-                            fontWeight: '800',
-                            color: '#1f2937',
-                            background: 'linear-gradient(135deg, #1f2937 0%, #4b5563 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text'
-                        }}>
-                            Ready to Chat
-                        </h3>
-                        <p style={{
-                            fontSize: '18px',
-                            lineHeight: '1.6',
-                            maxWidth: '500px',
-                            margin: '0 auto 24px auto'
-                        }}>
-                            I'm Claude, your AWS and cloud computing assistant. Ask me about AWS services, architecture, and best practices!
-                        </p>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            gap: '16px',
-                            flexWrap: 'wrap',
-                            marginTop: '32px'
-                        }}>
-                            <div 
-                                onClick={() => setInputMessage("What AWS services can I use?")}
-                                style={{
-                                    padding: '12px 20px',
-                                    background: 'rgba(102, 126, 234, 0.1)',
-                                    borderRadius: '20px',
-                                    fontSize: '14px',
-                                    color: '#667eea',
-                                    fontWeight: '500',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease'
-                                }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.2)';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
-                                }}
-                            >
-                                ☁️ AWS Services
-                            </div>
-                            <div 
-                                onClick={() => setInputMessage("How do I deploy to AWS?")}
-                                style={{
-                                    padding: '12px 20px',
-                                    background: 'rgba(102, 126, 234, 0.1)',
-                                    borderRadius: '20px',
-                                    fontSize: '14px',
-                                    color: '#667eea',
-                                    fontWeight: '500',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease'
-                                }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.2)';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
-                                }}
-                            >
-                                🚀 Deployment
-                            </div>
-                            <div 
-                                onClick={() => setInputMessage("What is serverless computing?")}
-                                style={{
-                                    padding: '12px 20px',
-                                    background: 'rgba(102, 126, 234, 0.1)',
-                                    borderRadius: '20px',
-                                    fontSize: '14px',
-                                    color: '#667eea',
-                                    fontWeight: '500',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease'
-                                }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.2)';
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.background = 'rgba(102, 126, 234, 0.1)';
-                                }}
-                            >
-                                ⚡ Serverless
-                            </div>
-                        </div>
-                    </div>
+        {messages.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '80px 20px',
+            color: '#d1d5db',
+            position: 'relative',
+            zIndex: 1
+          }}>
+            <div style={{
+              width: '100px',
+              height: '100px',
+              background: '#7c3aed',
+              borderRadius: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 32px',
+              fontSize: '40px'
+            }}>
+              💬
+            </div>
+            <h3 style={{
+              margin: '0 0 12px 0',
+              fontSize: '28px',
+              fontWeight: '800',
+              color: 'white'
+            }}>
+              Ready to Chat
+            </h3>
+            <p style={{
+              fontSize: '18px',
+              lineHeight: '1.6',
+              maxWidth: '500px',
+              margin: '0 auto 24px auto',
+              color: '#9ca3af'
+            }}>
+              I'm Claude, your AWS and cloud computing assistant. Ask me about AWS services, architecture, and best practices!
+            </p>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '16px',
+              flexWrap: 'wrap',
+              marginTop: '32px'
+            }}>
+              <div
+                onClick={() => setInputMessage("What AWS services can I use?")}
+                style={{
+                  padding: '12px 20px',
+                  background: '#374151',
+                  borderRadius: '20px',
+                  fontSize: '14px',
+                  color: 'white',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = '#4b5563';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = '#374151';
+                }}
+              >
+                ☁️ AWS Services
+              </div>
+              <div
+                onClick={() => setInputMessage("How do I deploy to AWS?")}
+                style={{
+                  padding: '12px 20px',
+                  background: '#374151',
+                  borderRadius: '20px',
+                  fontSize: '14px',
+                  color: 'white',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = '#4b5563';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = '#374151';
+                }}
+              >
+                🚀 Deployment
+              </div>
+              <div
+                onClick={() => setInputMessage("What is serverless computing?")}
+                style={{
+                  padding: '12px 20px',
+                  background: '#374151',
+                  borderRadius: '20px',
+                  fontSize: '14px',
+                  color: 'white',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = '#4b5563';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = '#374151';
+                }}
+              >
+                ⚡ Serverless
+              </div>
+            </div>
+          </div>
                 ) : (
                     messages.map((message) => (
                         <div key={message.id} style={{
@@ -646,24 +640,24 @@ export default function Chat({ businessData }: ChatProps = {}) {
                 )}
             </div>
 
-            {/* Input Area */}
-            <div style={{
-                padding: '20px 32px 24px',
-                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                borderTop: '1px solid rgba(0, 0, 0, 0.05)',
-                position: 'relative'
-            }}>
-                {/* Subtle top border glow */}
-                <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: '100px',
-                    height: '1px',
-                    background: 'linear-gradient(90deg, transparent, #667eea, transparent)',
-                    opacity: 0.5
-                }}></div>
+      {/* Input Area */}
+      <div style={{
+        padding: '20px 32px 24px',
+        background: '#1f2937',
+        borderTop: '1px solid #374151',
+        position: 'relative'
+      }}>
+        {/* Subtle top border glow */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '100px',
+          height: '1px',
+          background: 'linear-gradient(90deg, transparent, #7c3aed, transparent)',
+          opacity: 0.5
+        }}></div>
 
                 <div style={{
                     display: 'flex',
@@ -673,112 +667,105 @@ export default function Chat({ businessData }: ChatProps = {}) {
                     margin: '0 auto'
                 }}>
                     <div style={{ flex: 1, position: 'relative' }}>
-                        <textarea
-                            value={inputMessage}
-                            onChange={(e) => setInputMessage(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Ask me anything... I'm here to help! 💭"
-                            disabled={isLoading}
-                            style={{
-                                width: '100%',
-                                padding: '18px 24px',
-                                border: '2px solid #e2e8f0',
-                                borderRadius: '20px',
-                                resize: 'none',
-                                minHeight: '24px',
-                                maxHeight: '300px',
-                                fontFamily: 'inherit',
-                                fontSize: '16px',
-                                outline: 'none',
-                                transition: 'all 0.3s ease',
-                                background: 'white',
-                                boxSizing: 'border-box',
-                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
-                            }}
-                            onFocus={(e) => {
-                                e.target.style.borderColor = '#667eea';
-                                e.target.style.boxShadow = '0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08)';
-                                e.target.style.transform = 'translateY(-1px)';
-                            }}
-                            onBlur={(e) => {
-                                e.target.style.borderColor = '#e2e8f0';
-                                e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
-                                e.target.style.transform = 'translateY(0)';
-                            }}
-                            rows={1}
-                        />
+            <textarea
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask me anything... I'm here to help! 💭"
+              disabled={isLoading}
+              style={{
+                width: '100%',
+                padding: '18px 24px',
+                border: 'none',
+                borderRadius: '20px',
+                resize: 'none',
+                minHeight: '24px',
+                maxHeight: '300px',
+                fontFamily: 'inherit',
+                fontSize: '16px',
+                outline: 'none',
+                transition: 'all 0.3s ease',
+                background: '#374151',
+                color: 'white',
+                boxSizing: 'border-box'
+              }}
+              onFocus={(e) => {
+                e.target.style.background = '#4b5563';
+              }}
+              onBlur={(e) => {
+                e.target.style.background = '#374151';
+              }}
+              rows={1}
+            />
                     </div>
-                    <button
-                        onClick={handleSendMessage}
-                        disabled={!inputMessage.trim() || isLoading}
-                        style={{
-                            padding: '18px',
-                            background: !inputMessage.trim() || isLoading
-                                ? 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)'
-                                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            color: !inputMessage.trim() || isLoading ? '#94a3b8' : 'white',
-                            border: 'none',
-                            borderRadius: '16px',
-                            cursor: !inputMessage.trim() || isLoading ? 'not-allowed' : 'pointer',
-                            fontSize: '18px',
-                            width: '56px',
-                            height: '56px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.3s ease',
-                            boxShadow: !inputMessage.trim() || isLoading
-                                ? '0 2px 8px rgba(0, 0, 0, 0.04)'
-                                : '0 4px 16px rgba(102, 126, 234, 0.4)',
-                            position: 'relative',
-                            overflow: 'hidden'
-                        }}
-                        onMouseOver={(e) => {
-                            if (!(!inputMessage.trim() || isLoading)) {
-                                e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
-                                e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.5)';
-                            }
-                        }}
-                        onMouseOut={(e) => {
-                            if (!(!inputMessage.trim() || isLoading)) {
-                                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                                e.currentTarget.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.4)';
-                            }
-                        }}
-                    >
-                        {isLoading ? (
-                            <div style={{
-                                width: '20px',
-                                height: '20px',
-                                border: '2px solid rgba(255,255,255,0.3)',
-                                borderTop: '2px solid white',
-                                borderRadius: '50%',
-                                animation: 'spin 1s linear infinite'
-                            }}></div>
-                        ) : '🚀'}
-                    </button>
+          <button
+            onClick={handleSendMessage}
+            disabled={!inputMessage.trim() || isLoading}
+            style={{
+              padding: '18px',
+              background: !inputMessage.trim() || isLoading ? '#6b7280' : '#7c3aed',
+              color: 'white',
+              border: 'none',
+              borderRadius: '16px',
+              cursor: !inputMessage.trim() || isLoading ? 'not-allowed' : 'pointer',
+              fontSize: '18px',
+              width: '56px',
+              height: '56px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s ease',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+            onMouseOver={(e) => {
+              if (!(!inputMessage.trim() || isLoading)) {
+                e.currentTarget.style.background = '#6d28d9';
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!(!inputMessage.trim() || isLoading)) {
+                e.currentTarget.style.background = '#7c3aed';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              }
+            }}
+          >
+            {isLoading ? (
+              <div style={{
+                width: '20px',
+                height: '20px',
+                border: '2px solid rgba(255,255,255,0.3)',
+                borderTop: '2px solid white',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }}></div>
+            ) : '🚀'}
+          </button>
                 </div>
-                <div style={{
-                    marginTop: '16px',
-                    fontSize: '13px',
-                    color: '#64748b',
-                    textAlign: 'center',
-                    fontWeight: '500'
-                }}>
-                    Press <kbd style={{
-                        background: '#f1f5f9',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        border: '1px solid #e2e8f0'
-                    }}>Enter</kbd> to send • <kbd style={{
-                        background: '#f1f5f9',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        border: '1px solid #e2e8f0'
-                    }}>Shift + Enter</kbd> for new line
-                </div>
+        <div style={{
+          marginTop: '16px',
+          fontSize: '13px',
+          color: '#9ca3af',
+          textAlign: 'center',
+          fontWeight: '500'
+        }}>
+          Press <kbd style={{
+            background: '#374151',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            border: '1px solid #4b5563',
+            color: 'white'
+          }}>Enter</kbd> to send • <kbd style={{
+            background: '#374151',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            border: '1px solid #4b5563',
+            color: 'white'
+          }}>Shift + Enter</kbd> for new line
+        </div>
             </div>
         </div>
     );
