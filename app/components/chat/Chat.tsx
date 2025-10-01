@@ -1,53 +1,100 @@
-// Chat.tsx
+// ============================================================================
+// CHAT COMPONENT - AI-Powered Business Strategy Assistant
+// ============================================================================
+// This component provides the main chat interface for users to interact with
+// Claude AI via Amazon Bedrock. It handles conversation management, message
+// persistence, and real-time AI responses with business context integration.
+
 "use client";
 
+// ============================================================================
+// IMPORTS AND DEPENDENCIES
+// ============================================================================
+// React hooks for state management and lifecycle
 import { useState, useEffect } from "react";
+// AWS Amplify client for GraphQL operations and AI generation
 import { generateClient } from "aws-amplify/data";
+
 import type { Schema } from "@/amplify/data/resource";
+// Business idea data type from the form component
 import { BusinessIdeaData } from '../business/BusinessIdeaForm';
+// Sign out button component for user authentication
 import SignOutButton from "./SignOutButton";
 
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+// Message interface for individual chat messages
 interface Message {
-    id: string;
-    content: string;
-    role: 'user' | 'assistant';
-    timestamp: Date;
+    id: string;                    // Unique identifier for the message
+    content: string;               // The actual message text content
+    role: 'user' | 'assistant';   // Who sent the message (user or AI)
+    timestamp: Date;              // When the message was created
 }
 
+// Component props interface for business data integration
 interface ChatProps {
-  businessData?: BusinessIdeaData;
+  businessData?: BusinessIdeaData; // Optional business context from form
 }
+
+// ============================================================================
+// MAIN CHAT COMPONENT
+// ============================================================================
+// Purpose: Provides AI chat interface with conversation management
+// Features: Real-time messaging, AI responses, conversation persistence
+// Integration: Connects to Amazon Bedrock via Amplify for AI capabilities
 
 export default function Chat({ businessData }: ChatProps = {}) {
+    // ============================================================================
+    // STATE MANAGEMENT - Component State Variables
+    // ============================================================================
+    // Input state for the message textarea
     const [inputMessage, setInputMessage] = useState("");
+    // Debug information for troubleshooting
     const [debugInfo, setDebugInfo] = useState("");
+    // Array of all messages in the current conversation
     const [messages, setMessages] = useState<Message[]>([]);
+    // Loading state for AI response generation
     const [isLoading, setIsLoading] = useState(false);
+    // Test results for Bedrock connection testing
     const [testResult, setTestResult] = useState<string>('');
+    // Loading state for Bedrock connection testing
     const [isTesting, setIsTesting] = useState(false);
+    // Current conversation ID for database persistence
     const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+    // Loading state for conversation initialization
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
-    // 🗄️ CREATE OR LOAD CONVERSATION
+    // ============================================================================
+    // CONVERSATION INITIALIZATION - Database Setup
+    // ============================================================================
+    // Purpose: Creates a new conversation record in DynamoDB when component mounts
+    // Trigger: Runs once when component is first rendered
+    // Database: Creates Conversation record with business context
+    // State: Sets currentConversationId for message persistence
+
     useEffect(() => {
         const initializeConversation = async () => {
             setIsLoadingHistory(true);
             try {
+                // Create Amplify client with user authentication
                 const client = generateClient<Schema>({ authMode: 'userPool' });
                 
-                // Create a new conversation
+                // Generate conversation title based on business data
                 const conversationTitle = businessData?.businessIdea 
                     ? `Business: ${businessData.businessIdea.substring(0, 50)}${businessData.businessIdea.length > 50 ? '...' : ''}`
                     : `Chat Session ${new Date().toLocaleDateString()}`;
 
+                // Create new conversation record in DynamoDB
                 const newConversation = await client.models.Conversation.create({
-                    title: conversationTitle,
-                    businessIdea: businessData?.businessIdea || '',
-                    targetMarket: businessData?.targetMarket || '',
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
+                    title: conversationTitle,                    // Display name for the conversation
+                    businessIdea: businessData?.businessIdea || '', // Business context from form
+                    targetMarket: businessData?.targetMarket || '', // Target market context
+                    createdAt: new Date().toISOString(),         // Creation timestamp
+                    updatedAt: new Date().toISOString(),         // Last update timestamp
                 });
 
+                // Store conversation ID for message persistence
                 if (newConversation.data?.id) {
                     setCurrentConversationId(newConversation.data.id);
                     console.log('✅ New conversation created:', newConversation.data.id);
@@ -62,17 +109,26 @@ export default function Chat({ businessData }: ChatProps = {}) {
         initializeConversation();
     }, []); // Only run once on mount
 
-    // 💾 SAVE MESSAGE TO DATABASE
+    // ============================================================================
+    // MESSAGE PERSISTENCE - Database Storage
+    // ============================================================================
+    // Purpose: Saves individual messages to DynamoDB for conversation history
+    // Parameters: content (message text), role (user or assistant)
+    // Database: Creates Message record linked to current conversation
+    // Usage: Called after each user message and AI response
+
     const saveMessage = async (content: string, role: 'user' | 'assistant') => {
         if (!currentConversationId) return;
 
         try {
+            // Create Amplify client for database operations
             const client = generateClient<Schema>({ authMode: 'userPool' });
+            // Create message record in DynamoDB
             await client.models.Message.create({
-                conversationId: currentConversationId,
-                content: content,
-                role: role,
-                timestamp: new Date().toISOString(),
+                conversationId: currentConversationId,    // Link to current conversation
+                content: content,                         // Message text content
+                role: role,                              // Who sent the message
+                timestamp: new Date().toISOString(),    // When message was sent
             });
             console.log(`✅ ${role} message saved to database`);
         } catch (error) {
@@ -80,31 +136,57 @@ export default function Chat({ businessData }: ChatProps = {}) {
         }
     };
 
-    // 🎯 GENERATE CONTEXTUAL PROMPT
+    // ============================================================================
+    // CONTEXTUAL PROMPT GENERATION - Business Context Integration
+    // ============================================================================
+    // Purpose: Enhances user prompts with business context for better AI responses
+    // Input: User's original question
+    // Output: Enhanced prompt with business idea and target market context
+    // Usage: Provides AI with relevant business information for contextual advice
+
     const generateContextualPrompt = (userInput: string) => {
+        // Return original input if no business context available
         if (!businessData?.businessIdea && !businessData?.targetMarket) {
             return userInput;
         }
         
-        let context = "Business Context:\n";
+        // Build contextual prompt with business information
+        let context = "=== BUSINESS IDEA ANALYSIS CONTEXT ===\n\n";
+        
         if (businessData.businessIdea) {
-            context += `Business Idea: ${businessData.businessIdea}\n`;
+            context += `💡 BUSINESS IDEA:\n${businessData.businessIdea}\n\n`;
         }
         if (businessData.targetMarket) {
-            context += `Target Market: ${businessData.targetMarket}\n`;
+            context += `🎯 TARGET MARKET:\n${businessData.targetMarket}\n\n`;
         }
-        context += `\nQuestion: ${userInput}\n\nPlease provide specific advice based on my business context.`;
+        
+        context += `=== USER QUESTION ===\n${userInput}\n\n`;
+        context += `=== INSTRUCTIONS ===\n`;
+        context += `You are a business strategy consultant. Based on the business context provided above, please:\n\n`;
+        context += `1. FIRST: Provide a brief summary of the business idea and target market\n`;
+        context += `2. THEN: Analyze the business concept and identify potential strengths and weaknesses\n`;
+        context += `3. FINALLY: Suggest 3-5 strategic questions that would help evaluate if this is a viable business idea\n\n`;
+        context += `Focus on practical, actionable insights that help assess market viability, competitive positioning, and business potential.`;
+        
         return context;
     };
 
+    // ============================================================================
+    // MESSAGE HANDLING - Send Message to AI
+    // ============================================================================
+    // Purpose: Handles sending user messages to Claude AI via Amazon Bedrock
+    // Process: 1. Add user message to UI, 2. Save to database, 3. Get AI response
+    // AI Integration: Uses Amplify's generateResponse function with Claude 3.5 Sonnet
+    // Error Handling: Comprehensive error handling for different failure scenarios
+
     const handleSendMessage = async () => {
+        // Prevent sending empty messages or while loading
         if (!inputMessage.trim() || isLoading) return;
 
         console.log('Attempting to send message:', inputMessage);
-        // setDebugInfo(`Sending: "${inputMessage}"`);
         setIsLoading(true);
 
-        // Add user message immediately
+        // Add user message to UI immediately for better UX
         const userMessage: Message = {
             id: Date.now().toString(),
             content: inputMessage,
@@ -113,34 +195,45 @@ export default function Chat({ businessData }: ChatProps = {}) {
         };
         setMessages(prev => [...prev, userMessage]);
 
+        // Store current input and clear textarea
         const currentInput = inputMessage;
         setInputMessage("");
 
-        // 💾 Save user message to database
+        // Save user message to database for persistence
         await saveMessage(currentInput, 'user');
 
         try {
-            // 🔧 CREATE FRESH CLIENT (Same as working test button)
-            // This was the key fix - creating a new client each time instead of reusing a global one
+            // ============================================================================
+            // AI RESPONSE GENERATION - Amazon Bedrock Integration
+            // ============================================================================
+            // Create fresh Amplify client for each request (prevents connection issues)
             console.log('💬 Starting chat message...');
             const chatClient = generateClient<Schema>({ authMode: 'userPool' });
             console.log('✅ Chat client created');
 
-            // 📊 LOG PROMPT DETAILS (For debugging)
+            // Log prompt details for debugging
             console.log('Original prompt:', currentInput);
             console.log('Prompt length:', currentInput.length);
 
-            // 🎯 SEND FULL PROMPT (No character limits - use full context window)
+            // Send prompt to Claude 3.5 Sonnet via Amazon Bedrock
             console.log('Sending full prompt to Claude 3.5 Sonnet');
 
-            // 🚀 CALL BEDROCK API with full prompt (No truncation)
+            // Call Bedrock API with user prompt
+            const contextualPrompt = generateContextualPrompt(currentInput);
+            console.log('📝 Business analysis prompt:', contextualPrompt.substring(0, 200) + '...');
+            
             const response = await chatClient.generations.generateResponse({
-                prompt: currentInput
+                prompt: contextualPrompt
             });
 
             console.log('📥 Chat response:', response);
 
-            // ✅ SUCCESS CASE - Claude returned a valid response
+            // ============================================================================
+            // RESPONSE HANDLING - Process AI Response
+            // ============================================================================
+            // Handle different response scenarios from Claude AI
+
+            // SUCCESS CASE - Claude returned a valid response
             if (response.data?.response) {
                 const assistantMessage: Message = {
                     id: (Date.now() + 1).toString(),
@@ -149,12 +242,12 @@ export default function Chat({ businessData }: ChatProps = {}) {
                     timestamp: new Date(),
                 };
                 setMessages(prev => [...prev, assistantMessage]);
-                setDebugInfo(""); // Clear any debug info on success
+                setDebugInfo(""); // Clear debug info on success
                 
-                // 💾 Save assistant message to database
+                // Save AI response to database
                 await saveMessage(response.data.response, 'assistant');
             }
-            // ⚠️ NULL RESPONSE CASE - Claude returned null (usually prompt too long/complex)
+            // NULL RESPONSE CASE - Claude returned null (prompt too long/complex)
             else if (response.data?.response === null && response.data?.error === null) {
                 const errorMessage: Message = {
                     id: (Date.now() + 1).toString(),
@@ -164,7 +257,7 @@ export default function Chat({ businessData }: ChatProps = {}) {
                 };
                 setMessages(prev => [...prev, errorMessage]);
             }
-            // ❌ API ERROR CASE - Bedrock returned specific errors
+            // API ERROR CASE - Bedrock returned specific errors
             else if (response.errors && response.errors.length > 0) {
                 const errorMessage: Message = {
                     id: (Date.now() + 1).toString(),
@@ -174,7 +267,7 @@ export default function Chat({ businessData }: ChatProps = {}) {
                 };
                 setMessages(prev => [...prev, errorMessage]);
             }
-            // 🤔 UNKNOWN RESPONSE CASE - Something unexpected happened
+            // UNKNOWN RESPONSE CASE - Unexpected response format
             else {
                 const errorMessage: Message = {
                     id: (Date.now() + 1).toString(),
@@ -185,7 +278,7 @@ export default function Chat({ businessData }: ChatProps = {}) {
                 setMessages(prev => [...prev, errorMessage]);
             }
         } catch (error: any) {
-            // 💥 CONNECTION ERROR CASE - Network or authentication issues
+            // CONNECTION ERROR CASE - Network or authentication issues
             console.error('❌ Chat failed:', error);
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
@@ -199,12 +292,26 @@ export default function Chat({ businessData }: ChatProps = {}) {
         }
     };
 
+    // ============================================================================
+    // KEYBOARD EVENT HANDLING - User Input Shortcuts
+    // ============================================================================
+    // Purpose: Handles keyboard shortcuts for sending messages
+    // Enter: Send message (without Shift)
+    // Shift + Enter: New line in textarea
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSendMessage();
         }
     };
+
+    // ============================================================================
+    // BEDROCK CONNECTION TESTING - Debug Functionality
+    // ============================================================================
+    // Purpose: Tests the connection to Amazon Bedrock and Claude AI
+    // Usage: Debug tool to verify AI integration is working
+    // Output: Displays test results in the UI
 
     const testBedrockConnection = async () => {
         setIsTesting(true);
@@ -213,15 +320,18 @@ export default function Chat({ businessData }: ChatProps = {}) {
         try {
             console.log('🧪 Starting Bedrock test...');
 
+            // Create test client for Bedrock connection
             const testClient = generateClient<Schema>({ authMode: 'userPool' });
             console.log('✅ Test client created');
 
+            // Send simple test prompt to Claude
             const response = await testClient.generations.generateResponse({
                 prompt: 'Say "Hello from Claude!" and nothing else.'
             });
 
             console.log('📥 Test response:', response);
 
+            // Handle different test response scenarios
             if (response.data?.response) {
                 setTestResult(`✅ SUCCESS!\nClaude responded: "${response.data.response}"`);
             } else if (response.errors && response.errors.length > 0) {
@@ -237,6 +347,13 @@ export default function Chat({ businessData }: ChatProps = {}) {
         }
     };
 
+  // ============================================================================
+  // UI RENDERING - Chat Interface Layout
+  // ============================================================================
+  // Purpose: Renders the complete chat interface with header, messages, and input
+  // Layout: Vertical flex layout with fixed header, scrollable messages, fixed input
+  // Styling: Dark theme with modern design and smooth animations
+
   return (
     <div style={{
       display: 'flex',
@@ -245,7 +362,13 @@ export default function Chat({ businessData }: ChatProps = {}) {
       background: '#1f2937',
       overflow: 'hidden'
     }}>
-      {/* Chat Header */}
+      {/* ============================================================================
+          CHAT HEADER - Top Navigation Bar
+          ============================================================================
+          Purpose: Displays chat title, status, and user controls
+          Features: Online status indicator, sign out button
+          Styling: Dark background with subtle borders
+      */}
       <div style={{
         padding: '24px 32px',
         background: '#1f2937',
@@ -319,7 +442,13 @@ export default function Chat({ businessData }: ChatProps = {}) {
                 </div>
             </div>
 
-            {/* Test Result Area */}
+            {/* ============================================================================
+                TEST RESULT AREA - Debug Information Display
+                ============================================================================
+                Purpose: Shows Bedrock connection test results
+                Styling: Green for success, red for errors
+                Features: Dismissible with close button
+            */}
             {testResult && (
                 <div style={{
                     padding: '16px 32px',
@@ -347,7 +476,13 @@ export default function Chat({ businessData }: ChatProps = {}) {
                 </div>
             )}
 
-      {/* Messages Area */}
+      {/* ============================================================================
+          MESSAGES AREA - Chat Conversation Display
+          ============================================================================
+          Purpose: Scrollable area containing all chat messages
+          Features: Auto-scroll, background pattern, message bubbles
+          Layout: Flex container with overflow handling
+      */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
@@ -355,7 +490,13 @@ export default function Chat({ businessData }: ChatProps = {}) {
         background: '#1f2937',
         position: 'relative'
       }}>
-        {/* Background Pattern */}
+        {/* ============================================================================
+            BACKGROUND PATTERN - Subtle Visual Enhancement
+            ============================================================================
+            Purpose: Adds subtle dot pattern to messages area
+            Styling: Radial gradient dots with low opacity
+            Effect: Non-intrusive visual texture
+        */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -386,6 +527,13 @@ export default function Chat({ businessData }: ChatProps = {}) {
                     </div>
                 )} */}
 
+        {/* ============================================================================
+            EMPTY STATE - Welcome Screen When No Messages
+            ============================================================================
+            Purpose: Shows welcome message and suggestion buttons when chat is empty
+            Features: Dynamic content based on business data availability
+            Styling: Centered layout with large icon and call-to-action buttons
+        */}
         {messages.length === 0 ? (
           <div style={{
             textAlign: 'center',
@@ -422,7 +570,10 @@ export default function Chat({ businessData }: ChatProps = {}) {
               margin: '0 auto 24px auto',
               color: '#9ca3af'
             }}>
-              I'm Claude, your AWS and cloud computing assistant. Ask me about AWS services, architecture, and best practices!
+              {businessData?.businessIdea || businessData?.targetMarket 
+                  ? "I can analyze your business idea and provide strategic insights. Try asking: 'Analyze my business idea' or 'What questions should I consider?'"
+                  : "I'm your business strategy assistant. Share your business idea and target market to get personalized analysis and strategic recommendations!"
+              }
             </p>
             <div style={{
               display: 'flex',
@@ -432,7 +583,7 @@ export default function Chat({ businessData }: ChatProps = {}) {
               marginTop: '32px'
             }}>
               <div
-                onClick={() => setInputMessage("What AWS services can I use?")}
+                onClick={() => setInputMessage("Analyze my business idea")}
                 style={{
                   padding: '12px 20px',
                   background: '#374151',
@@ -450,10 +601,10 @@ export default function Chat({ businessData }: ChatProps = {}) {
                   e.currentTarget.style.background = '#374151';
                 }}
               >
-                ☁️ AWS Services
+                💡 Analyze Business Idea
               </div>
               <div
-                onClick={() => setInputMessage("How do I deploy to AWS?")}
+                onClick={() => setInputMessage("What strategic questions should I consider?")}
                 style={{
                   padding: '12px 20px',
                   background: '#374151',
@@ -471,10 +622,10 @@ export default function Chat({ businessData }: ChatProps = {}) {
                   e.currentTarget.style.background = '#374151';
                 }}
               >
-                🚀 Deployment
+                🎯 Strategic Questions
               </div>
               <div
-                onClick={() => setInputMessage("What is serverless computing?")}
+                onClick={() => setInputMessage("Help me evaluate market potential")}
                 style={{
                   padding: '12px 20px',
                   background: '#374151',
@@ -492,11 +643,18 @@ export default function Chat({ businessData }: ChatProps = {}) {
                   e.currentTarget.style.background = '#374151';
                 }}
               >
-                ⚡ Serverless
+                📊 Market Analysis
               </div>
             </div>
           </div>
                 ) : (
+                    /* ============================================================================
+                        MESSAGE LIST - Chat Conversation Display
+                        ============================================================================
+                        Purpose: Renders all chat messages in conversation order
+                        Features: User/assistant message bubbles with timestamps
+                        Styling: Different styles for user vs assistant messages
+                    */
                     messages.map((message) => (
                         <div key={message.id} style={{
                             marginBottom: '24px',
@@ -581,6 +739,13 @@ export default function Chat({ businessData }: ChatProps = {}) {
                         </div>
                     ))
                 )}
+                {/* ============================================================================
+                    LOADING INDICATOR - AI Response Loading State
+                    ============================================================================
+                    Purpose: Shows animated loading indicator while AI is processing
+                    Features: Pulsing dots animation with "Claude is thinking..." text
+                    Styling: Matches assistant message bubble design
+                */}
                 {isLoading && (
                     <div style={{
                         display: 'flex',
@@ -640,14 +805,26 @@ export default function Chat({ businessData }: ChatProps = {}) {
                 )}
             </div>
 
-      {/* Input Area */}
+      {/* ============================================================================
+          INPUT AREA - Message Composition Interface
+          ============================================================================
+          Purpose: Text input area for composing and sending messages
+          Features: Auto-resize textarea, send button, keyboard shortcuts
+          Styling: Fixed bottom position with subtle top border glow
+      */}
       <div style={{
         padding: '20px 32px 24px',
         background: '#1f2937',
         borderTop: '1px solid #374151',
         position: 'relative'
       }}>
-        {/* Subtle top border glow */}
+        {/* ============================================================================
+            TOP BORDER GLOW - Subtle Visual Enhancement
+            ============================================================================
+            Purpose: Adds subtle purple glow to top of input area
+            Styling: Linear gradient with transparency
+            Effect: Visual separation between messages and input
+        */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -743,6 +920,13 @@ export default function Chat({ businessData }: ChatProps = {}) {
             ) : '🚀'}
           </button>
                 </div>
+        {/* ============================================================================
+            KEYBOARD SHORTCUTS HELP - User Interface Instructions
+            ============================================================================
+            Purpose: Shows keyboard shortcuts for message composition
+            Features: Styled keyboard key indicators
+            Styling: Centered text with monospace key styling
+        */}
         <div style={{
           marginTop: '16px',
           fontSize: '13px',

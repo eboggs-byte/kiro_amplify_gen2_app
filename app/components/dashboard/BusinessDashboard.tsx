@@ -24,7 +24,7 @@ export default function BusinessDashboard() {
         />
       }
       rightPane={
-        <Chat />
+        <Chat businessData={businessData} />
       }
     />
   );
