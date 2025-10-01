@@ -1,26 +1,26 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
 const schema = a.schema({
-  // 🗄️ CONVERSATION MODEL - Stores chat sessions
-  Conversation: a
+  // 🗄️ BUSINESS SESSION MODEL - Stores business analysis sessions
+  BusinessSession: a
     .model({
       title: a.string().required(),
       businessIdea: a.string(), // Optional: store business context
       targetMarket: a.string(), // Optional: store target market
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
-      messages: a.hasMany('Message', 'conversationId'), // Add the hasMany relationship
+      analysisMessages: a.hasMany('AnalysisMessage', 'sessionId'), // Add the hasMany relationship
     })
     .authorization((allow) => [allow.owner()]),
 
-  // 💬 MESSAGE MODEL - Stores individual chat messages
-  Message: a
+  // 💬 ANALYSIS MESSAGE MODEL - Stores individual analysis messages
+  AnalysisMessage: a
     .model({
-      conversationId: a.id().required(),
+      sessionId: a.id().required(),
       content: a.string().required(),
       role: a.enum(['user', 'assistant']),
       timestamp: a.datetime().required(),
-      conversation: a.belongsTo('Conversation', 'conversationId'),
+      businessSession: a.belongsTo('BusinessSession', 'sessionId'),
     })
     .authorization((allow) => [allow.owner()]),
 

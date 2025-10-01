@@ -85,19 +85,19 @@ export default function Chat({ businessData }: ChatProps = {}) {
                     ? `Business: ${businessData.businessIdea.substring(0, 50)}${businessData.businessIdea.length > 50 ? '...' : ''}`
                     : `Chat Session ${new Date().toLocaleDateString()}`;
 
-                // Create new conversation record in DynamoDB
-                const newConversation = await client.models.Conversation.create({
-                    title: conversationTitle,                    // Display name for the conversation
+                // Create new business session record in DynamoDB
+                const newBusinessSession = await client.models.BusinessSession.create({
+                    title: conversationTitle,                    // Display name for the session
                     businessIdea: businessData?.businessIdea || '', // Business context from form
                     targetMarket: businessData?.targetMarket || '', // Target market context
                     createdAt: new Date().toISOString(),         // Creation timestamp
                     updatedAt: new Date().toISOString(),         // Last update timestamp
                 });
 
-                // Store conversation ID for message persistence
-                if (newConversation.data?.id) {
-                    setCurrentConversationId(newConversation.data.id);
-                    console.log('✅ New conversation created:', newConversation.data.id);
+                // Store session ID for message persistence
+                if (newBusinessSession.data?.id) {
+                    setCurrentConversationId(newBusinessSession.data.id);
+                    console.log('✅ New business session created:', newBusinessSession.data.id);
                 }
             } catch (error) {
                 console.error('❌ Error creating conversation:', error);
@@ -123,9 +123,9 @@ export default function Chat({ businessData }: ChatProps = {}) {
         try {
             // Create Amplify client for database operations
             const client = generateClient<Schema>({ authMode: 'userPool' });
-            // Create message record in DynamoDB
-            await client.models.Message.create({
-                conversationId: currentConversationId,    // Link to current conversation
+            // Create analysis message record in DynamoDB
+            await client.models.AnalysisMessage.create({
+                sessionId: currentConversationId,        // Link to current business session
                 content: content,                         // Message text content
                 role: role,                              // Who sent the message
                 timestamp: new Date().toISOString(),    // When message was sent
