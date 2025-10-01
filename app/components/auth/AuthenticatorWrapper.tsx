@@ -58,8 +58,10 @@ export default function AuthenticatorWrapper({
       <div className="modern-hero-section">
         <div className="modern-hero-content">
           <h1 className="modern-hero-title">
-            Evaluate Your Idea<br />
-            Intelligently.
+            Evaluate Your Idea Intelligently.
+            <br />
+            <br />
+            <b></b>
           </h1>
           <p className="modern-hero-description">
             Helps users quickly evaluate whether their app or startup idea is a good business opportunity<br />
@@ -97,7 +99,8 @@ export default function AuthenticatorWrapper({
         </div>
       </div>
 
-      {/* Features Section */}
+      {/* Features Section - COMMENTED OUT */}
+      {/*
       <div className="modern-features-section">
         <div className="modern-features-content">
           <h2 className="modern-features-title">Why Chat with Claude?</h2>
@@ -132,6 +135,7 @@ export default function AuthenticatorWrapper({
           </div>
         </div>
       </div>
+      */}
     </div>
   );
 }
