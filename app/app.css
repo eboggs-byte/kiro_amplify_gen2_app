@@ -129,3 +129,6 @@ textarea:focus-visible {
   0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); }
   50% { box-shadow: 0 0 30px rgba(102, 126, 234, 0.6); }
 }
+
+/* Import dashboard styles */
+@import './styles/dashboard.css';

@@ -2,7 +2,7 @@
 
 import "@aws-amplify/ui-react/styles.css";
 import { useAuthenticator } from "@aws-amplify/ui-react";
-import BusinessDashboard from "./components/dashboard/BusinessDashboard";
+import HomePage from "./components/dashboard/HomePage";
 import "./app.css";
 
 export default function App() {
@@ -55,5 +55,5 @@ export default function App() {
     );
   }
 
-  return <BusinessDashboard />;
+  return <HomePage />;
 }
