@@ -242,6 +242,71 @@
   background: #6b7280;
 }
 
+/* Individual widget colors */
+.business-tool-card-icon--business-planning {
+  background: #8B5CF6;
+}
+
+.business-tool-card-icon--legal-compliance {
+  background: #8B5CF6;
+}
+
+.business-tool-card-icon--finance-funding {
+  background: #10B981;
+}
+
+.business-tool-card-icon--marketing-brand {
+  background: #EF4444;
+}
+
+.business-tool-card-icon--operations {
+  background: #F59E0B;
+}
+
+.business-tool-card-icon--customer-relations {
+  background: #3B82F6;
+}
+
+.business-tool-card-icon--technology {
+  background: #06B6D4;
+}
+
+/* Individual tool item colors to match their parent widgets */
+.business-tool-card--business-planning .business-tool-item:hover {
+  background: #f3e8ff;
+  border-color: #8B5CF6;
+}
+
+.business-tool-card--legal-compliance .business-tool-item:hover {
+  background: #f3e8ff;
+  border-color: #8B5CF6;
+}
+
+.business-tool-card--finance-funding .business-tool-item:hover {
+  background: #ecfdf5;
+  border-color: #10B981;
+}
+
+.business-tool-card--marketing-brand .business-tool-item:hover {
+  background: #fef2f2;
+  border-color: #EF4444;
+}
+
+.business-tool-card--operations .business-tool-item:hover {
+  background: #fffbeb;
+  border-color: #F59E0B;
+}
+
+.business-tool-card--customer-relations .business-tool-item:hover {
+  background: #eff6ff;
+  border-color: #3B82F6;
+}
+
+.business-tool-card--technology .business-tool-item:hover {
+  background: #ecfeff;
+  border-color: #06B6D4;
+}
+
 .business-tool-card-info {
   flex: 1;
 }

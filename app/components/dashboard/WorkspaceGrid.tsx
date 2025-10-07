@@ -13,7 +13,7 @@ export default function WorkspaceGrid({ onToolClick, onCreateWidget }: Workspace
       id: 'business-planning',
       title: 'Business Planning',
       description: 'Business plan generator, market research, and strategy tools.',
-      icon: '#8B5CF6',
+      icon: 'target',
       tools: [
         { name: 'Business Plan Builder', icon: 'document' },
         { name: 'Market Research', icon: 'search' },
@@ -24,7 +24,7 @@ export default function WorkspaceGrid({ onToolClick, onCreateWidget }: Workspace
       id: 'legal-compliance',
       title: 'Legal & Compliance',
       description: 'Business registration, contracts, and legal documentation.',
-      icon: '#8B5CF6',
+      icon: 'building',
       tools: [
         { name: 'Entity Formation', icon: 'building' },
         { name: 'Contract Templates', icon: 'document' },
@@ -35,7 +35,7 @@ export default function WorkspaceGrid({ onToolClick, onCreateWidget }: Workspace
       id: 'finance-funding',
       title: 'Finance & Funding',
       description: 'Financial planning, investor pitch decks, and funding options.',
-      icon: '#10B981',
+      icon: 'dollar',
       tools: [
         { name: 'Financial Projections', icon: 'dollar' },
         { name: 'Pitch Deck Builder', icon: 'presentation' },
@@ -46,7 +46,7 @@ export default function WorkspaceGrid({ onToolClick, onCreateWidget }: Workspace
       id: 'marketing-brand',
       title: 'Marketing & Brand',
       description: 'Logo design, marketing campaigns, and brand development.',
-      icon: '#EF4444',
+      icon: 'star',
       tools: [
         { name: 'Logo Generator', icon: 'star' },
         { name: 'Social Media Kit', icon: 'share' },
@@ -57,7 +57,7 @@ export default function WorkspaceGrid({ onToolClick, onCreateWidget }: Workspace
       id: 'operations',
       title: 'Operations',
       description: 'Project management, inventory, and workflow automation.',
-      icon: '#F59E0B',
+      icon: 'grid',
       tools: [
         { name: 'Project Manager', icon: 'grid' },
         { name: 'Inventory Tracker', icon: 'package' },
@@ -68,7 +68,7 @@ export default function WorkspaceGrid({ onToolClick, onCreateWidget }: Workspace
       id: 'customer-relations',
       title: 'Customer Relations',
       description: 'CRM, customer support, and relationship management tools.',
-      icon: '#3B82F6',
+      icon: 'users',
       tools: [
         { name: 'CRM System', icon: 'users' },
         { name: 'Support Desk', icon: 'headphones' },
@@ -79,7 +79,7 @@ export default function WorkspaceGrid({ onToolClick, onCreateWidget }: Workspace
       id: 'technology',
       title: 'Technology',
       description: 'Website builder, e-commerce setup, and digital tools.',
-      icon: '#06B6D4',
+      icon: 'monitor',
       tools: [
         { name: 'Website Builder', icon: 'monitor' },
         { name: 'E-commerce Setup', icon: 'shopping-cart' },
@@ -141,14 +141,13 @@ export default function WorkspaceGrid({ onToolClick, onCreateWidget }: Workspace
 
       <div className="workspace-grid-content">
         {businessTools.map((tool) => (
-          <div key={tool.id} className="business-tool-card">
+          <div key={tool.id} className={`business-tool-card business-tool-card--${tool.id}`}>
             <div className="business-tool-card-header">
               <div 
-                className="business-tool-card-icon" 
-                style={{ backgroundColor: tool.icon }}
+                className={`business-tool-card-icon business-tool-card-icon--${tool.id}`}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  {getIconSVG('document')}
+                  {getIconSVG(tool.icon)}
                 </svg>
               </div>
               <div className="business-tool-card-info">
