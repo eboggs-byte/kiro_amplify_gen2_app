@@ -49,33 +49,80 @@ export default function AIBusinessAssistant({ onSendMessage }: AIBusinessAssista
       setMessage('');
       setIsTyping(true);
 
-      // Simulate AI response
-      setTimeout(() => {
+      try {
+        console.log('🚀 Calling /api/agents with message:', message);
+        
+        // Call your existing agents API
+        const response = await fetch('/api/agents', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: message }),
+        });
+        
+        console.log('📡 API response status:', response.status);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const agentData = await response.json();
+        console.log('📥 Agent response data:', agentData);
+
+        if (agentData.error) {
+          throw new Error(agentData.error);
+        }
+
+        // Handle different response formats from your agents
+        let responseContent = '';
+        
+        if (typeof agentData.response === 'string') {
+          responseContent = agentData.response;
+        } else if (agentData.response && typeof agentData.response === 'object') {
+          // Handle object responses like {reply, state}
+          if (agentData.response.reply) {
+            responseContent = agentData.response.reply;
+          } else if (agentData.response.message) {
+            responseContent = agentData.response.message;
+          } else if (agentData.response.content) {
+            responseContent = agentData.response.content;
+          } else {
+            // Fallback: stringify the object
+            responseContent = JSON.stringify(agentData.response, null, 2);
+          }
+        } else {
+          responseContent = agentData.response || 'No response from agents';
+        }
+
         const assistantMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
-          content: generateAIResponse(message),
+          content: responseContent,
           sender: 'assistant',
           timestamp: new Date()
         };
 
         setMessages(prev => [...prev, assistantMessage]);
-        setIsTyping(false);
         onSendMessage?.(message);
-      }, 1500);
+
+      } catch (error: any) {
+        console.error('❌ Agent connection failed:', error);
+        
+        const errorMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          content: `Connection failed: ${error.message}. Make sure your agents are running at http://localhost:8080/invoke`,
+          sender: 'assistant',
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, errorMessage]);
+      } finally {
+        setIsTyping(false);
+      }
     }
   };
 
-  const generateAIResponse = (userMessage: string): string => {
-    const responses = [
-      "That's a great question! Let me help you with that. Based on your business idea, I'd recommend starting with market research to validate your concept.",
-      "I can definitely help you with that! Let's break this down into actionable steps. First, let's identify your target market and competition.",
-      "Excellent! This is a common challenge for new businesses. Let me provide you with a structured approach to tackle this.",
-      "Great question! I'll help you create a comprehensive plan for this. Let's start by understanding your current situation and goals.",
-      "I'm here to help! Let me provide you with some expert guidance on this topic. Here's what I recommend..."
-    ];
-    
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
+  // Removed generateAIResponse - now using real agents
 
   const handleQuickPrompt = (prompt: string) => {
     setMessage(prompt);
