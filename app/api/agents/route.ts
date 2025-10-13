@@ -18,7 +18,7 @@ export async function OPTIONS(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message } = body;
+    const { message, context, section } = body;
 
     if (!message) {
       return NextResponse.json(
@@ -31,14 +31,20 @@ export async function POST(request: NextRequest) {
     console.log('🌐 Agents URL:', `${AGENTS_BASE_URL}${AGENTS_INVOKE_ENDPOINT}`);
     console.log('🔍 Full request URL:', `${AGENTS_BASE_URL}${AGENTS_INVOKE_ENDPOINT}`);
 
-    // Forward the message to your existing agents
+    // Forward the message to your existing agents with context
+    const requestBody = { 
+      message: message,
+      ...(context && { context }),
+      ...(section && { section })
+    };
+
     const response = await fetch(`${AGENTS_BASE_URL}${AGENTS_INVOKE_ENDPOINT}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-actor-id': 'test-user-123', // Required header for your agents
       },
-      body: JSON.stringify({ message: message }),
+      body: JSON.stringify(requestBody),
     });
 
     console.log('📡 Agents response status:', response.status);

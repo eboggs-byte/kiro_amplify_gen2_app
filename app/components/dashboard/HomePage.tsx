@@ -18,7 +18,13 @@ export default function HomePage() {
 
   const handleToolClick = (toolId: string, toolName: string) => {
     console.log(`Tool clicked: ${toolId} - ${toolName}`);
-    // Implement tool navigation
+    
+    // Handle navigation to widgets
+    if (toolId === 'business-planning') {
+      window.location.href = '/business-planning';
+    } else if (toolId === 'finance-funding') {
+      window.location.href = '/finance-funding';
+    }
   };
 
   const handleCreateWidget = () => {

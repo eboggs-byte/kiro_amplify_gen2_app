@@ -132,3 +132,6 @@ textarea:focus-visible {
 
 /* Import dashboard styles */
 @import './styles/dashboard.css';
+
+/* Import widget styles */
+@import './styles/widgets.css';

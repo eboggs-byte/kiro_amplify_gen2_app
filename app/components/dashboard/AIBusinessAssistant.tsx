@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import WidgetRecommendation from '../widgets/WidgetRecommendation';
 
 interface ChatMessage {
   id: string;
@@ -15,6 +17,7 @@ interface AIBusinessAssistantProps {
 }
 
 export default function AIBusinessAssistant({ onSendMessage }: AIBusinessAssistantProps) {
+  const router = useRouter();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -25,6 +28,8 @@ export default function AIBusinessAssistant({ onSendMessage }: AIBusinessAssista
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [showWidgetRecommendation, setShowWidgetRecommendation] = useState(false);
+  const [lastUserMessage, setLastUserMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -105,6 +110,15 @@ export default function AIBusinessAssistant({ onSendMessage }: AIBusinessAssista
         setMessages(prev => [...prev, assistantMessage]);
         onSendMessage?.(message);
 
+        // Check if we should show widget recommendation
+        const shouldRecommendWidget = checkForWidgetRecommendation(message, responseContent);
+        if (shouldRecommendWidget) {
+          setLastUserMessage(message);
+          setTimeout(() => {
+            setShowWidgetRecommendation(true);
+          }, 2000); // Show recommendation after 2 seconds
+        }
+
       } catch (error: any) {
         console.error('❌ Agent connection failed:', error);
         
@@ -122,7 +136,42 @@ export default function AIBusinessAssistant({ onSendMessage }: AIBusinessAssista
     }
   };
 
-  // Removed generateAIResponse - now using real agents
+  // Check if we should recommend a widget based on the conversation
+  const checkForWidgetRecommendation = (userMessage: string, assistantResponse: string): boolean => {
+    const lowerUserMessage = userMessage.toLowerCase();
+    const lowerAssistantResponse = assistantResponse.toLowerCase();
+    
+    // Business planning keywords
+    const businessPlanningKeywords = [
+      'business plan', 'strategy', 'market analysis', 'competition', 'target market',
+      'business model', 'mission', 'vision', 'swot', 'competitive advantage'
+    ];
+    
+    // Finance and funding keywords
+    const financeFundingKeywords = [
+      'funding', 'investment', 'loan', 'capital', 'financial projection', 'budget',
+      'cash flow', 'revenue', 'profit', 'expenses', 'startup costs', 'venture capital'
+    ];
+    
+    const hasBusinessKeywords = businessPlanningKeywords.some(keyword => 
+      lowerUserMessage.includes(keyword) || lowerAssistantResponse.includes(keyword)
+    );
+    
+    const hasFinanceKeywords = financeFundingKeywords.some(keyword => 
+      lowerUserMessage.includes(keyword) || lowerAssistantResponse.includes(keyword)
+    );
+    
+    return hasBusinessKeywords || hasFinanceKeywords;
+  };
+
+  const handleWidgetSelection = (widget: 'business-planning' | 'finance-funding') => {
+    setShowWidgetRecommendation(false);
+    router.push(`/${widget}`);
+  };
+
+  const handleDismissRecommendation = () => {
+    setShowWidgetRecommendation(false);
+  };
 
   const handleQuickPrompt = (prompt: string) => {
     setMessage(prompt);
@@ -143,6 +192,15 @@ export default function AIBusinessAssistant({ onSendMessage }: AIBusinessAssista
           Describe your business idea or ask for help with any aspect of starting your business.
         </p>
       </div>
+
+      {/* Widget Recommendation */}
+      {showWidgetRecommendation && (
+        <WidgetRecommendation
+          onSelectWidget={handleWidgetSelection}
+          onDismiss={handleDismissRecommendation}
+          lastMessage={lastUserMessage}
+        />
+      )}
 
       {/* Chat Messages Area */}
       <div className="ai-business-assistant-chat">

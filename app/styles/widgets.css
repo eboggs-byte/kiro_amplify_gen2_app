@@ -1,0 +1,469 @@
+/* Widget Container Styles */
+.widget-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f8fafc;
+}
+
+.widget-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.widget-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.widget-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Section Tabs */
+.section-tabs {
+  display: flex;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 24px;
+}
+
+.section-tab {
+  padding: 16px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.section-tab:hover {
+  color: #475569;
+  background: #f8fafc;
+}
+
+.section-tab.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+  background: #f8fafc;
+}
+
+/* Widget Chat Styles */
+.widget-chat {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: white;
+  margin: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.widget-messages {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.widget-message {
+  display: flex;
+  gap: 12px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.widget-message--user {
+  flex-direction: row-reverse;
+}
+
+.widget-message-avatar {
+  flex-shrink: 0;
+}
+
+.widget-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.widget-user-avatar {
+  width: 40px;
+  height: 40px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+}
+
+.widget-message-content {
+  flex: 1;
+  max-width: 70%;
+}
+
+.widget-message--user .widget-message-content {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.widget-message-bubble {
+  background: #f1f5f9;
+  padding: 12px 16px;
+  border-radius: 16px;
+  position: relative;
+}
+
+.widget-message--user .widget-message-bubble {
+  background: #667eea;
+  color: white;
+}
+
+.widget-message-bubble p {
+  margin: 0;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.widget-message-time {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.widget-message--user .widget-message-time {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Typing Indicator */
+.widget-typing {
+  background: #f1f5f9 !important;
+}
+
+.widget-typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.widget-typing-indicator span {
+  width: 8px;
+  height: 8px;
+  background: #94a3b8;
+  border-radius: 50%;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.widget-typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.widget-typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Widget Form */
+.widget-form {
+  padding: 24px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.widget-input-container {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.widget-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.widget-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.widget-input:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.widget-send-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.widget-send-btn:hover:not(:disabled) {
+  background: #5a67d8;
+  transform: translateY(-1px);
+}
+
+.widget-send-btn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Widget Recommendation Styles */
+.widget-recommendation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.widget-recommendation-content {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideIn 0.4s ease-out;
+}
+
+.widget-recommendation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.widget-recommendation-header h4 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.widget-recommendation-close {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.widget-recommendation-close:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.widget-recommendation-text {
+  color: #475569;
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.widget-recommendation-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.widget-recommendation-button {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.widget-recommendation-button:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.widget-recommendation-button.business-planning:hover {
+  border-color: #f59e0b;
+}
+
+.widget-recommendation-button.finance-funding:hover {
+  border-color: #10b981;
+}
+
+.widget-recommendation-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.business-planning .widget-recommendation-icon {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.finance-funding .widget-recommendation-icon {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.widget-recommendation-info h5 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.widget-recommendation-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.widget-recommendation-footer {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.widget-recommendation-dismiss {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.widget-recommendation-dismiss:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .widget-header {
+    padding: 12px 16px;
+  }
+  
+  .widget-header h2 {
+    font-size: 20px;
+  }
+  
+  .section-tabs {
+    padding: 0 16px;
+    overflow-x: auto;
+  }
+  
+  .section-tab {
+    padding: 12px 16px;
+    white-space: nowrap;
+  }
+  
+  .widget-chat {
+    margin: 16px;
+  }
+  
+  .widget-messages {
+    padding: 16px;
+  }
+  
+  .widget-form {
+    padding: 16px;
+  }
+  
+  .widget-recommendation-content {
+    padding: 24px;
+    margin: 16px;
+  }
+  
+  .widget-recommendation-options {
+    gap: 12px;
+  }
+  
+  .widget-recommendation-button {
+    padding: 16px;
+  }
+  
+  .widget-recommendation-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
