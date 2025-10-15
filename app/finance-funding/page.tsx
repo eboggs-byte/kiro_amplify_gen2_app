@@ -1,7 +1,7 @@
 "use client";
 
-import FinanceFundingWidget from '../components/widgets/FinanceFundingWidget';
+import FinanceFundingWorkflow from '../components/workflows/FinanceFundingWorkflow';
 
 export default function FinanceFundingPage() {
-  return <FinanceFundingWidget />;
+    return <FinanceFundingWorkflow />;
 }

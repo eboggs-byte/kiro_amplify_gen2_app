@@ -1,7 +1,7 @@
 "use client";
 
-import BusinessPlanningWidget from '../components/widgets/BusinessPlanningWidget';
+import BusinessPlanningWorkflow from '../components/workflows/BusinessPlanningWorkflow';
 
 export default function BusinessPlanningPage() {
-  return <BusinessPlanningWidget />;
+  return <BusinessPlanningWorkflow />;
 }

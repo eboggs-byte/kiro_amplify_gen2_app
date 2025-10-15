@@ -135,3 +135,6 @@ textarea:focus-visible {
 
 /* Import widget styles */
 @import './styles/widgets.css';
+
+/* Import workflow styles */
+@import './styles/workflow.css';
