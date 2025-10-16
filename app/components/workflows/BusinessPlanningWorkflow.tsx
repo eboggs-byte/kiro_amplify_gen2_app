@@ -22,13 +22,12 @@ interface BusinessPlanningWorkflowProps {
 
 export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWorkflowProps) {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(2); // Financial Planning step (0-indexed)
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0); // Start with Business Overview
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [aiMessages, setAiMessages] = useState<ChatMessage[]>([
     {
       id: '1',
-      content: 'I can help you with financial planning questions and provide industry benchmarks.',
+      content: 'I can help you with business planning questions and provide guidance based on your answers.',
       sender: 'assistant',
       timestamp: new Date()
     }
@@ -36,33 +35,26 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
   const [aiMessage, setAiMessage] = useState('');
   const [isAiTyping, setIsAiTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Investment form data
-  const [investmentData, setInvestmentData] = useState({
-    equipment: '',
-    inventory: '',
-    marketing: '',
-    workingCapital: '',
-    additionalNotes: ''
+  // Business form data - will be auto-populated from SmallBizAgentState
+  const [formData, setFormData] = useState({
+    // Business Overview fields
+    business_name: '',
+    business_idea: '',
+    target_market: '',
+    unique_value: '',
+    business_model: '',
+    
+    // Market Analysis fields  
+    market_size: '',
+    competitors: '',
+    competitive_advantage: ''
   });
 
   const steps: WorkflowStep[] = [
-    { id: 'overview', title: 'Business Overview', status: 'completed' },
-    { id: 'market', title: 'Market Analysis', status: 'completed' },
-    { id: 'financial', title: 'Financial Planning', status: 'current' },
-    { id: 'operations', title: 'Operations Plan', status: 'upcoming' },
-    { id: 'marketing', title: 'Marketing Strategy', status: 'upcoming' },
-    { id: 'risk', title: 'Risk Assessment', status: 'upcoming' },
-    { id: 'implementation', title: 'Implementation', status: 'upcoming' },
-    { id: 'review', title: 'Review & Finalize', status: 'upcoming' }
-  ];
-
-  const questions = [
-    {
-      title: 'Initial Investment Requirements',
-      subtitle: 'Question 1 of 5 in this section',
-      description: 'What is your estimated initial investment requirement to start your business? Please break down the major categories of expenses.'
-    }
+    { id: 'overview', title: 'Business Overview', status: currentStep === 0 ? 'current' : currentStep > 0 ? 'completed' : 'upcoming' },
+    { id: 'market', title: 'Market Analysis', status: currentStep === 1 ? 'current' : currentStep > 1 ? 'completed' : 'upcoming' }
   ];
 
   const scrollToBottom = () => {
@@ -73,6 +65,51 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
     scrollToBottom();
   }, [aiMessages]);
 
+  // Auto-populate form data from SmallBizAgentState on component mount
+  useEffect(() => {
+    loadSmallBizAgentState();
+  }, []);
+
+  const loadSmallBizAgentState = async () => {
+    try {
+      setLoading(true);
+      console.log('🚀 Loading SmallBizAgentState data for auto-population...');
+
+      const response = await fetch('/api/smallbiz-state');
+      const result = await response.json();
+
+      if (result.success && result.data && result.data.length > 0) {
+        const agentData = result.data[0]; // Get the first record
+        
+        console.log('✅ Auto-populating form with SmallBizAgentState data:', agentData);
+
+        // Auto-populate form fields
+        setFormData(prev => ({
+          ...prev,
+          business_name: agentData.business_name || '',
+          business_idea: agentData.idea || '',
+          target_market: agentData.market || ''
+        }));
+
+        // Update AI assistant with context
+        setAiMessages(prevMessages => [...prevMessages, {
+          id: Date.now().toString(),
+          content: `I can see you're working on "${agentData.business_name}" - ${agentData.idea}. I have access to your business information and can provide personalized guidance.`,
+          sender: 'assistant',
+          timestamp: new Date()
+        }]);
+
+        console.log('✅ Form auto-populated successfully');
+      } else {
+        console.log('📭 No SmallBizAgentState data found for auto-population');
+      }
+    } catch (error) {
+      console.error('❌ Error loading SmallBizAgentState for auto-population:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleBack = () => {
     if (onBack) {
       onBack();
@@ -82,18 +119,10 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setInvestmentData(prev => ({
+    setFormData(prev => ({
       ...prev,
       [field]: value
     }));
-  };
-
-  const calculateTotal = () => {
-    const equipment = parseFloat(investmentData.equipment) || 0;
-    const inventory = parseFloat(investmentData.inventory) || 0;
-    const marketing = parseFloat(investmentData.marketing) || 0;
-    const workingCapital = parseFloat(investmentData.workingCapital) || 0;
-    return equipment + inventory + marketing + workingCapital;
   };
 
   const handleAiSubmit = async (e: React.FormEvent) => {
@@ -117,9 +146,9 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ 
-            message: `[Business Planning Workflow - Financial Planning] ${aiMessage}`,
+            message: `[Business Planning Workflow - ${steps[currentStep]?.title}] ${aiMessage}`,
             context: 'business_planning_workflow',
-            section: 'financial_planning'
+            section: steps[currentStep]?.id || 'business_overview'
           }),
         });
 
@@ -128,14 +157,14 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
         }
 
         const agentData = await response.json();
-        
+
         let responseContent = '';
         if (typeof agentData.response === 'string') {
           responseContent = agentData.response;
         } else if (agentData.response?.reply) {
           responseContent = agentData.response.reply;
         } else {
-          responseContent = 'I\'m here to help with your financial planning. Could you be more specific about what you need?';
+          responseContent = 'I\'m here to help with your business planning. Could you be more specific about what you need?';
         }
 
         const assistantMessage: ChatMessage = {
@@ -152,7 +181,7 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
         
         const errorMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
-          content: 'I\'m having trouble connecting right now. Let me help you with some financial planning guidance.',
+          content: 'I\'m having trouble connecting right now. Let me help you with some business planning guidance.',
           sender: 'assistant',
           timestamp: new Date()
         };
@@ -164,21 +193,6 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
     }
   };
 
-  const handleNextQuestion = () => {
-    // Handle navigation to next question/step
-    console.log('Next question clicked');
-  };
-
-  const handlePreviousQuestion = () => {
-    // Handle navigation to previous question
-    console.log('Previous question clicked');
-  };
-
-  const handleSkipForNow = () => {
-    // Handle skip functionality
-    console.log('Skip for now clicked');
-  };
-
   return (
     <div className="workflow-container">
       {/* Header */}
@@ -186,14 +200,14 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
         <div className="workflow-header-left">
           <button onClick={handleBack} className="back-button">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="m12 19-7-7 7-7"/>
-              <path d="M19 12H5"/>
+              <path d="m12 19-7-7 7-7" />
+              <path d="M19 12H5" />
             </svg>
           </button>
           <div className="workflow-logo">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 12l2 2 4-4"/>
-              <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/>
+              <path d="M9 12l2 2 4-4" />
+              <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
             </svg>
             <span>PlanFlow</span>
           </div>
@@ -207,8 +221,8 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
         <div className="workflow-header-right">
           <button className="notification-button">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
           </button>
           <div className="user-avatar">
@@ -224,10 +238,10 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
             <h3>Business Planning Workflow</h3>
             <div className="progress-info">
               <span>Progress</span>
-              <span>3 of 8</span>
+              <span>Step {currentStep + 1} of 2</span>
             </div>
             <div className="progress-bar">
-              <div className="progress-fill" style={{ width: '37.5%' }}></div>
+              <div className="progress-fill" style={{ width: `${((currentStep + 1) / 2) * 100}%` }}></div>
             </div>
           </div>
 
@@ -237,10 +251,8 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
                 <div className="step-indicator">
                   {step.status === 'completed' ? (
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="20,6 9,17 4,12"/>
+                      <polyline points="20,6 9,17 4,12" />
                     </svg>
-                  ) : step.status === 'current' ? (
-                    <span>{index + 1}</span>
                   ) : (
                     <span>{index + 1}</span>
                   )}
@@ -259,9 +271,9 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
           <div className="quick-tip">
             <div className="quick-tip-header">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
               Quick Tip
             </div>
@@ -273,20 +285,24 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
         <div className="workflow-main">
           <div className="workflow-question">
             <div className="question-header">
-              <h1>Financial Planning</h1>
-              <p>Step 3 of 8 - Let's analyze your financial projections and requirements</p>
+              <h1>{currentStep === 0 ? 'Business Overview' : 'Market Analysis'}</h1>
+              <p>Step {currentStep + 1} of 2 - {currentStep === 0 ? 'Let\'s start with your business fundamentals' : 'Analyze your target market and competition'}</p>
               <div className="question-actions">
                 <button className="save-draft-button">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                    <polyline points="17,21 17,13 7,13 7,21"/>
-                    <polyline points="7,3 7,8 15,8"/>
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17,21 17,13 7,13 7,21" />
+                    <polyline points="7,3 7,8 15,8" />
                   </svg>
                   Save Draft
                 </button>
-                <button className="previous-button">
+                <button 
+                  className="previous-button" 
+                  onClick={() => currentStep > 0 && setCurrentStep(currentStep - 1)}
+                  disabled={currentStep === 0}
+                >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="m15 18-6-6 6-6"/>
+                    <path d="m15 18-6-6 6-6" />
                   </svg>
                   Previous
                 </button>
@@ -294,109 +310,164 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
             </div>
 
             <div className="question-content">
-              <div className="question-section">
-                <div className="section-header">
-                  <div className="section-number">3</div>
-                  <div className="section-info">
-                    <h2>Initial Investment Requirements</h2>
-                    <p>Question 1 of 5 in this section</p>
+              {loading && (
+                <div className="loading-indicator">
+                  <div className="spinner"></div>
+                  <p>Loading your business data...</p>
+                </div>
+              )}
+
+              {currentStep === 0 && (
+                <div className="question-section">
+                  <div className="section-header">
+                    <div className="section-number">1</div>
+                    <div className="section-info">
+                      <h2>Business Basics</h2>
+                      <p>Tell us about your business concept</p>
+                    </div>
+                  </div>
+
+                  <div className="business-form">
+                    <div className="form-field">
+                      <label>Business Name *</label>
+                      <input
+                        type="text"
+                        value={formData.business_name}
+                        onChange={(e) => handleInputChange('business_name', e.target.value)}
+                        placeholder="What will you call your business?"
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>Business Idea *</label>
+                      <textarea
+                        value={formData.business_idea}
+                        onChange={(e) => handleInputChange('business_idea', e.target.value)}
+                        placeholder="Describe your business concept, products, or services..."
+                        rows={4}
+                        className="form-textarea"
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>Target Market *</label>
+                      <textarea
+                        value={formData.target_market}
+                        onChange={(e) => handleInputChange('target_market', e.target.value)}
+                        placeholder="Describe your ideal customers and target market..."
+                        rows={3}
+                        className="form-textarea"
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>What makes your business unique?</label>
+                      <textarea
+                        value={formData.unique_value}
+                        onChange={(e) => handleInputChange('unique_value', e.target.value)}
+                        placeholder="What sets you apart from competitors?"
+                        rows={3}
+                        className="form-textarea"
+                      />
+                    </div>
+
+                    <div className="form-field">
+                      <label>Business Model</label>
+                      <select
+                        value={formData.business_model}
+                        onChange={(e) => handleInputChange('business_model', e.target.value)}
+                        className="form-select"
+                      >
+                        <option value="">Select a business model</option>
+                        <option value="B2B">B2B (Business to Business)</option>
+                        <option value="B2C">B2C (Business to Consumer)</option>
+                        <option value="B2B2C">B2B2C (Business to Business to Consumer)</option>
+                        <option value="Marketplace">Marketplace</option>
+                        <option value="Subscription">Subscription</option>
+                        <option value="Freemium">Freemium</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
+              )}
 
-                <p className="question-description">
-                  What is your estimated initial investment requirement to start your business? Please break down the major categories of expenses.
-                </p>
-
-                <div className="investment-form">
-                  <div className="form-row">
-                    <div className="form-field">
-                      <label>Equipment & Technology</label>
-                      <div className="input-with-currency">
-                        <span className="currency">$</span>
-                        <input
-                          type="number"
-                          value={investmentData.equipment}
-                          onChange={(e) => handleInputChange('equipment', e.target.value)}
-                          placeholder="0"
-                        />
-                      </div>
-                    </div>
-                    <div className="form-field">
-                      <label>Inventory & Supplies</label>
-                      <div className="input-with-currency">
-                        <span className="currency">$</span>
-                        <input
-                          type="number"
-                          value={investmentData.inventory}
-                          onChange={(e) => handleInputChange('inventory', e.target.value)}
-                          placeholder="0"
-                        />
-                      </div>
+              {currentStep === 1 && (
+                <div className="question-section">
+                  <div className="section-header">
+                    <div className="section-number">2</div>
+                    <div className="section-info">
+                      <h2>Market Analysis</h2>
+                      <p>Analyze your competition and market positioning</p>
                     </div>
                   </div>
 
-                  <div className="form-row">
+                  <div className="business-form">
                     <div className="form-field">
-                      <label>Marketing & Branding</label>
-                      <div className="input-with-currency">
-                        <span className="currency">$</span>
-                        <input
-                          type="number"
-                          value={investmentData.marketing}
-                          onChange={(e) => handleInputChange('marketing', e.target.value)}
-                          placeholder="0"
-                        />
-                      </div>
+                      <label>Market Size</label>
+                      <select
+                        value={formData.market_size}
+                        onChange={(e) => handleInputChange('market_size', e.target.value)}
+                        className="form-select"
+                      >
+                        <option value="">Select market size</option>
+                        <option value="Local">Local (City/Region)</option>
+                        <option value="National">National</option>
+                        <option value="International">International</option>
+                        <option value="Global">Global</option>
+                        <option value="Niche">Niche Market</option>
+                      </select>
                     </div>
+
                     <div className="form-field">
-                      <label>Working Capital</label>
-                      <div className="input-with-currency">
-                        <span className="currency">$</span>
-                        <input
-                          type="number"
-                          value={investmentData.workingCapital}
-                          onChange={(e) => handleInputChange('workingCapital', e.target.value)}
-                          placeholder="0"
-                        />
-                      </div>
+                      <label>Who are your main competitors?</label>
+                      <textarea
+                        value={formData.competitors}
+                        onChange={(e) => handleInputChange('competitors', e.target.value)}
+                        placeholder="List and describe your direct and indirect competitors..."
+                        rows={4}
+                        className="form-textarea"
+                      />
                     </div>
-                  </div>
 
-                  <div className="form-field full-width">
-                    <label>Additional Notes</label>
-                    <textarea
-                      value={investmentData.additionalNotes}
-                      onChange={(e) => handleInputChange('additionalNotes', e.target.value)}
-                      placeholder="Describe any additional investment requirements or special considerations..."
-                      rows={4}
-                    />
-                  </div>
-
-                  <div className="total-investment">
-                    <span>Total Estimated Investment</span>
-                    <span className="total-amount">${calculateTotal().toLocaleString()}</span>
+                    <div className="form-field">
+                      <label>Your Competitive Advantage</label>
+                      <textarea
+                        value={formData.competitive_advantage}
+                        onChange={(e) => handleInputChange('competitive_advantage', e.target.value)}
+                        placeholder="How will you compete and win against competitors?"
+                        rows={4}
+                        className="form-textarea"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="question-navigation">
-                <button onClick={handlePreviousQuestion} className="nav-button secondary">
+                <button 
+                  onClick={() => currentStep > 0 && setCurrentStep(currentStep - 1)} 
+                  className="nav-button secondary"
+                  disabled={currentStep === 0}
+                >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="m15 18-6-6 6-6"/>
+                    <path d="m15 18-6-6 6-6" />
                   </svg>
-                  Previous Question
+                  Previous Step
                 </button>
                 <div className="question-info">
-                  <span>1 of 5 questions</span>
+                  <span>Step {currentStep + 1} of 2</span>
                 </div>
                 <div className="nav-buttons-right">
-                  <button onClick={handleSkipForNow} className="nav-button tertiary">
-                    Skip for Now
-                  </button>
-                  <button onClick={handleNextQuestion} className="nav-button primary">
-                    Next Question
+                  <button 
+                    onClick={() => currentStep < 1 && setCurrentStep(currentStep + 1)} 
+                    className="nav-button primary"
+                    disabled={currentStep === 1}
+                  >
+                    {currentStep === 1 ? 'Complete' : 'Next Step'}
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="m9 18 6-6-6-6"/>
+                      <path d="m9 18 6-6-6-6" />
                     </svg>
                   </button>
                 </div>
@@ -412,12 +483,12 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
             <div className="ai-assistant-info">
               <div className="ai-avatar">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
               </div>
               <div>
                 <div className="ai-title">AI Assistant</div>
-                <div className="ai-description">I can help you with financial planning questions and provide industry benchmarks.</div>
+                <div className="ai-description">I can help you with business planning, market analysis, and strategic guidance.</div>
               </div>
             </div>
             <button 
@@ -462,7 +533,7 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
                   type="text"
                   value={aiMessage}
                   onChange={(e) => setAiMessage(e.target.value)}
-                  placeholder="Ask about financial planning..."
+                  placeholder="Ask about business planning..."
                   className="ai-input"
                   disabled={isAiTyping}
                 />
@@ -472,73 +543,13 @@ export default function BusinessPlanningWorkflow({ onBack }: BusinessPlanningWor
                   disabled={!aiMessage.trim() || isAiTyping}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="22" y1="2" x2="11" y2="13"/>
-                    <polygon points="22,2 15,22 11,13 2,9 22,2"/>
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22,2 15,22 11,13 2,9 22,2" />
                   </svg>
                 </button>
               </form>
             </div>
           )}
-
-          <div className="helpful-resources">
-            <h4>Helpful Resources</h4>
-            <div className="resource-item">
-              <div className="resource-icon startup-cost">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="12" y1="1" x2="12" y2="23"/>
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                </svg>
-              </div>
-              <div>
-                <div className="resource-title">Startup Cost Calculator</div>
-                <div className="resource-description">Download our comprehensive calculator to estimate your startup costs.</div>
-              </div>
-            </div>
-
-            <div className="resource-item">
-              <div className="resource-icon industry-benchmarks">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 3v18h18"/>
-                  <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
-                </svg>
-              </div>
-              <div>
-                <div className="resource-title">Industry Benchmarks</div>
-                <div className="resource-description">Compare your estimates with industry standards and averages.</div>
-              </div>
-            </div>
-
-            <div className="resource-item">
-              <div className="resource-icon video-tutorial">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polygon points="23,7 16,12 23,17 23,7"/>
-                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                </svg>
-              </div>
-              <div>
-                <div className="resource-title">Video Tutorial</div>
-                <div className="resource-description">Watch our 5-minute guide on financial planning for startups.</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="progress-summary">
-            <h4>Your Progress</h4>
-            <div className="progress-stats">
-              <div className="stat">
-                <span className="stat-label">Questions Answered</span>
-                <span className="stat-value">12/35</span>
-              </div>
-              <div className="stat">
-                <span className="stat-label">Time Spent</span>
-                <span className="stat-value">45 min</span>
-              </div>
-              <div className="stat">
-                <span className="stat-label">Estimated Completion</span>
-                <span className="stat-value">2h 15min</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
