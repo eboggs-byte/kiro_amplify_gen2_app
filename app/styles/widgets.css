@@ -422,48 +422,85 @@
   .widget-header {
     padding: 12px 16px;
   }
-  
+
   .widget-header h2 {
     font-size: 20px;
   }
-  
+
   .section-tabs {
     padding: 0 16px;
     overflow-x: auto;
   }
-  
+
   .section-tab {
     padding: 12px 16px;
     white-space: nowrap;
   }
-  
+
   .widget-chat {
     margin: 16px;
   }
-  
+
   .widget-messages {
     padding: 16px;
   }
-  
+
   .widget-form {
     padding: 16px;
   }
-  
+
   .widget-recommendation-content {
     padding: 24px;
     margin: 16px;
   }
-  
+
   .widget-recommendation-options {
     gap: 12px;
   }
-  
+
   .widget-recommendation-button {
     padding: 16px;
   }
-  
+
   .widget-recommendation-icon {
     width: 40px;
     height: 40px;
+  }
+}
+
+/* Auto-redirect countdown styles */
+.widget-recommendation-button.recommended {
+  border-color: #10b981 !important;
+  background: #f0fdf4 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+
+.widget-recommendation-button.recommended:hover {
+  border-color: #059669 !important;
+  background: #ecfdf5 !important;
+}
+
+.countdown-badge {
+  background: #10b981;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  animation: pulse 1s ease-in-out infinite;
+  margin-left: 8px;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(0.95);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
   }
 }

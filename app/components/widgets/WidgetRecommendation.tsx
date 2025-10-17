@@ -6,10 +6,17 @@ interface WidgetRecommendationProps {
   onSelectWidget: (widget: 'business-planning' | 'finance-funding') => void;
   onDismiss: () => void;
   lastMessage?: string;
+  recommendedWidget?: 'business-planning' | 'finance-funding' | null;
+  countdown?: number | null;
 }
 
-export default function WidgetRecommendation({ onSelectWidget, onDismiss, lastMessage }: WidgetRecommendationProps) {
+export default function WidgetRecommendation({ onSelectWidget, onDismiss, lastMessage, recommendedWidget, countdown }: WidgetRecommendationProps) {
   const getRecommendationText = () => {
+    if (recommendedWidget && countdown !== null) {
+      const widgetName = recommendedWidget === 'business-planning' ? 'Business Planning Widget' : 'Finance & Funding Widget';
+      return `Based on our conversation, I think the ${widgetName} would be perfect for you! I'll take you there in ${countdown} seconds, or you can choose a different option below.`;
+    }
+    
     if (lastMessage) {
       const lowerMessage = lastMessage.toLowerCase();
       
@@ -42,7 +49,7 @@ export default function WidgetRecommendation({ onSelectWidget, onDismiss, lastMe
         
         <div className="widget-recommendation-options">
           <button 
-            className="widget-recommendation-button business-planning"
+            className={`widget-recommendation-button business-planning ${recommendedWidget === 'business-planning' ? 'recommended' : ''}`}
             onClick={() => onSelectWidget('business-planning')}
           >
             <div className="widget-recommendation-icon">
@@ -51,13 +58,13 @@ export default function WidgetRecommendation({ onSelectWidget, onDismiss, lastMe
               </svg>
             </div>
             <div className="widget-recommendation-info">
-              <h5>Business Planning Widget</h5>
+              <h5>Business Planning Widget {recommendedWidget === 'business-planning' && countdown !== null && <span className="countdown-badge">Recommended ({countdown}s)</span>}</h5>
               <p>Business overview, market analysis, and strategy development</p>
             </div>
           </button>
           
           <button 
-            className="widget-recommendation-button finance-funding"
+            className={`widget-recommendation-button finance-funding ${recommendedWidget === 'finance-funding' ? 'recommended' : ''}`}
             onClick={() => onSelectWidget('finance-funding')}
           >
             <div className="widget-recommendation-icon">
@@ -68,7 +75,7 @@ export default function WidgetRecommendation({ onSelectWidget, onDismiss, lastMe
               </svg>
             </div>
             <div className="widget-recommendation-info">
-              <h5>Finance & Funding Widget</h5>
+              <h5>Finance & Funding Widget {recommendedWidget === 'finance-funding' && countdown !== null && <span className="countdown-badge">Recommended ({countdown}s)</span>}</h5>
               <p>Financial projections, funding options, and budgeting</p>
             </div>
           </button>

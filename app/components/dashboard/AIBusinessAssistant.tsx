@@ -30,7 +30,10 @@ export default function AIBusinessAssistant({ onSendMessage }: AIBusinessAssista
   const [isTyping, setIsTyping] = useState(false);
   const [showWidgetRecommendation, setShowWidgetRecommendation] = useState(false);
   const [lastUserMessage, setLastUserMessage] = useState('');
+  const [recommendedWidget, setRecommendedWidget] = useState<'business-planning' | 'finance-funding' | null>(null);
+  const [autoRedirectCountdown, setAutoRedirectCountdown] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -110,12 +113,14 @@ export default function AIBusinessAssistant({ onSendMessage }: AIBusinessAssista
         setMessages(prev => [...prev, assistantMessage]);
         onSendMessage?.(message);
 
-        // Check if we should show widget recommendation
-        const shouldRecommendWidget = checkForWidgetRecommendation(message, responseContent);
-        if (shouldRecommendWidget) {
+        // Check if we should show widget recommendation and auto-redirect
+        const recommendedWidgetType = await analyzeForWidgetRecommendation(message, responseContent);
+        if (recommendedWidgetType) {
           setLastUserMessage(message);
+          setRecommendedWidget(recommendedWidgetType);
           setTimeout(() => {
             setShowWidgetRecommendation(true);
+            startAutoRedirectCountdown(recommendedWidgetType);
           }, 2000); // Show recommendation after 2 seconds
         }
 
@@ -136,40 +141,156 @@ export default function AIBusinessAssistant({ onSendMessage }: AIBusinessAssista
     }
   };
 
-  // Check if we should recommend a widget based on the conversation
-  const checkForWidgetRecommendation = (userMessage: string, assistantResponse: string): boolean => {
+  // Use AI to analyze the conversation and determine the best widget recommendation
+  const analyzeForWidgetRecommendation = async (userMessage: string, assistantResponse: string): Promise<'business-planning' | 'finance-funding' | null> => {
+    try {
+      // Create a prompt for the AI to analyze the conversation context
+      const analysisPrompt = `
+Analyze this conversation and determine if the user would benefit from a specialized widget:
+
+User Question: "${userMessage}"
+Assistant Response: "${assistantResponse}"
+
+Available widgets:
+1. Business Planning Widget - For comprehensive business strategy, market analysis, business model development, competitive analysis, and overall business planning
+2. Finance & Funding Widget - For financial projections, funding requirements, cash flow planning, investment analysis, and financial modeling
+
+Based on the conversation context, which widget would be MOST helpful for the user's specific needs right now? 
+
+Respond with ONLY one of these options:
+- "business-planning" if the Business Planning Widget would be most helpful
+- "finance-funding" if the Finance & Funding Widget would be most helpful  
+- "none" if neither widget is particularly relevant to this conversation
+
+Consider the user's immediate needs and what they're trying to accomplish. Don't recommend a widget unless it would genuinely add significant value to their current question or goal.
+      `;
+
+      const response = await fetch('/api/agents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          message: analysisPrompt,
+          context: 'widget-analysis' // Add context to help the agent understand this is for analysis
+        }),
+      });
+
+      if (!response.ok) {
+        console.log('Widget analysis failed, falling back to keyword detection');
+        return fallbackKeywordDetection(userMessage, assistantResponse);
+      }
+
+      const analysisData = await response.json();
+      let analysisResult = '';
+      
+      if (typeof analysisData.response === 'string') {
+        analysisResult = analysisData.response.toLowerCase().trim();
+      } else if (analysisData.response && analysisData.response.reply) {
+        analysisResult = analysisData.response.reply.toLowerCase().trim();
+      }
+
+      // Parse the AI's recommendation
+      if (analysisResult.includes('business-planning')) {
+        console.log('🎯 AI recommends: Business Planning Widget');
+        return 'business-planning';
+      } else if (analysisResult.includes('finance-funding')) {
+        console.log('🎯 AI recommends: Finance & Funding Widget');
+        return 'finance-funding';
+      } else {
+        console.log('🎯 AI recommends: No widget needed');
+        return null;
+      }
+
+    } catch (error) {
+      console.error('Widget analysis error:', error);
+      // Fallback to simple keyword detection if AI analysis fails
+      return fallbackKeywordDetection(userMessage, assistantResponse);
+    }
+  };
+
+  // Fallback keyword detection (simpler logic as backup)
+  const fallbackKeywordDetection = (userMessage: string, assistantResponse: string): 'business-planning' | 'finance-funding' | null => {
     const lowerUserMessage = userMessage.toLowerCase();
     const lowerAssistantResponse = assistantResponse.toLowerCase();
     
-    // Business planning keywords
-    const businessPlanningKeywords = [
-      'business plan', 'strategy', 'market analysis', 'competition', 'target market',
-      'business model', 'mission', 'vision', 'swot', 'competitive advantage'
-    ];
-    
-    // Finance and funding keywords
-    const financeFundingKeywords = [
+    // Strong finance indicators
+    const strongFinanceKeywords = [
       'funding', 'investment', 'loan', 'capital', 'financial projection', 'budget',
-      'cash flow', 'revenue', 'profit', 'expenses', 'startup costs', 'venture capital'
+      'cash flow', 'revenue', 'profit', 'expenses', 'startup costs', 'venture capital',
+      'how much money', 'cost', 'price', 'financial', 'finance'
     ];
     
-    const hasBusinessKeywords = businessPlanningKeywords.some(keyword => 
+    // Strong business planning indicators  
+    const strongBusinessKeywords = [
+      'business plan', 'strategy', 'market analysis', 'competition', 'target market',
+      'business model', 'mission', 'vision', 'swot', 'competitive advantage',
+      'business idea', 'market research', 'business strategy'
+    ];
+    
+    const hasStrongFinanceKeywords = strongFinanceKeywords.some(keyword => 
       lowerUserMessage.includes(keyword) || lowerAssistantResponse.includes(keyword)
     );
     
-    const hasFinanceKeywords = financeFundingKeywords.some(keyword => 
+    const hasStrongBusinessKeywords = strongBusinessKeywords.some(keyword => 
       lowerUserMessage.includes(keyword) || lowerAssistantResponse.includes(keyword)
     );
     
-    return hasBusinessKeywords || hasFinanceKeywords;
+    // Only recommend if there are strong indicators
+    if (hasStrongFinanceKeywords && !hasStrongBusinessKeywords) {
+      return 'finance-funding';
+    } else if (hasStrongBusinessKeywords && !hasStrongFinanceKeywords) {
+      return 'business-planning';
+    }
+    
+    // If both or neither, don't recommend anything
+    return null;
   };
 
+  // Start the auto-redirect countdown
+  const startAutoRedirectCountdown = (widgetType: 'business-planning' | 'finance-funding') => {
+    setAutoRedirectCountdown(3);
+    
+    countdownIntervalRef.current = setInterval(() => {
+      setAutoRedirectCountdown(prev => {
+        if (prev === null || prev <= 1) {
+          // Auto-redirect when countdown reaches 0
+          clearInterval(countdownIntervalRef.current!);
+          setShowWidgetRecommendation(false);
+          setAutoRedirectCountdown(null);
+          router.push(`/${widgetType}`);
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // Clear countdown when component unmounts or recommendation is dismissed
+  useEffect(() => {
+    return () => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
+    };
+  }, []);
+
   const handleWidgetSelection = (widget: 'business-planning' | 'finance-funding') => {
+    // Clear countdown and redirect immediately
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+    }
+    setAutoRedirectCountdown(null);
     setShowWidgetRecommendation(false);
     router.push(`/${widget}`);
   };
 
   const handleDismissRecommendation = () => {
+    // Clear countdown and dismiss
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+    }
+    setAutoRedirectCountdown(null);
     setShowWidgetRecommendation(false);
   };
 
@@ -199,6 +320,8 @@ export default function AIBusinessAssistant({ onSendMessage }: AIBusinessAssista
           onSelectWidget={handleWidgetSelection}
           onDismiss={handleDismissRecommendation}
           lastMessage={lastUserMessage}
+          recommendedWidget={recommendedWidget}
+          countdown={autoRedirectCountdown}
         />
       )}
 
